@@ -1,0 +1,107 @@
+
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: CloudQuiz - Cloud-Native Online Examination System
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 15
+    MemorySize: 256
+    Environment:
+      Variables:
+        QUIZ_TABLE: !Ref QuizTable
+        RESULTS_TABLE: !Ref ResultsTable
+
+Resources:
+
+  QuizTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CloudQuiz-Quizzes
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: quizId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: quizId
+          KeyType: HASH
+
+  ResultsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CloudQuiz-Results
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: resultId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: resultId
+          KeyType: HASH
+
+  CloudQuizApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: prod
+      CorsConfiguration:
+        AllowOrigins:
+          - https://saggy0823.github.io
+          - http://localhost:5500
+        AllowHeaders:
+          - Content-Type
+          - Authorization
+        AllowMethods:
+          - GET
+          - POST
+          - OPTIONS
+        MaxAge: 600
+
+  CloudQuizFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: CloudQuizBackend
+      CodeUri: ../backend/
+      Handler: app.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref QuizTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ResultsTable
+      Events:
+        Health:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref CloudQuizApi
+            Path: /health
+            Method: GET
+
+        GetQuizzes:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref CloudQuizApi
+            Path: /quizzes
+            Method: GET
+
+        SubmitQuiz:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref CloudQuizApi
+            Path: /submit
+            Method: POST
+
+Outputs:
+
+  ApiUrl:
+    Description: CloudQuiz API Gateway URL
+    Value: !Sub
+      - https://${ApiId}.execute-api.${AWS::Region}.amazonaws.com/prod
+      - ApiId: !Ref CloudQuizApi
+
+  QuizTableName:
+    Description: DynamoDB quiz table
+    Value: !Ref QuizTable
+
+  ResultsTableName:
+    Description: DynamoDB results table
+    Value: !Ref ResultsTable
+
