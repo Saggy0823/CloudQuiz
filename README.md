@@ -1,5 +1,3 @@
-<CodeBlock language="markdown" editable>
-# CloudQuiz – Cloud-Native Online Examination System
 
 
 CloudQuiz is a cloud-native online examination platform designed to conduct online quizzes, evaluate student submissions, and manage examination results using AWS cloud services.
@@ -32,4 +30,3 @@ Project Structure
 - docs/ – Project and deployment documentation
 Project Status
 Development in progress.
-</CodeBlock>
