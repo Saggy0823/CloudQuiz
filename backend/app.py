@@ -2,16 +2,22 @@
 import json
 import os
 import uuid
+import traceback
 from datetime import datetime, timezone
 from decimal import Decimal
 
 import boto3
-from boto3.dynamodb.conditions import Key
 
+# DynamoDB configuration
 dynamodb = boto3.resource("dynamodb")
 
-QUIZ_TABLE_NAME = os.environ.get("QUIZ_TABLE", "CloudQuiz-Quizzes")
-RESULTS_TABLE_NAME = os.environ.get("RESULTS_TABLE", "CloudQuiz-Results")
+QUIZ_TABLE_NAME = os.environ.get(
+    "QUIZ_TABLE", "CloudQuiz-Quizzes"
+)
+
+RESULTS_TABLE_NAME = os.environ.get(
+    "RESULTS_TABLE", "CloudQuiz-Results"
+)
 
 quiz_table = dynamodb.Table(QUIZ_TABLE_NAME)
 results_table = dynamodb.Table(RESULTS_TABLE_NAME)
@@ -27,6 +33,30 @@ def response(status_code, body):
     }
 
 
+def get_authenticated_user(event):
+    """
+    Read identity claims verified by the API Gateway
+    Cognito JWT authorizer.
+    """
+    claims = (
+        event.get("requestContext", {})
+        .get("authorizer", {})
+        .get("jwt", {})
+        .get("claims", {})
+    )
+
+    user_id = claims.get("sub")
+    email = claims.get("email", "")
+
+    if not user_id:
+        return None
+
+    return {
+        "userId": user_id,
+        "email": email
+    }
+
+
 def get_quizzes():
     result = quiz_table.scan()
     quizzes = result.get("Items", [])
@@ -37,7 +67,6 @@ def get_quizzes():
         )
         quizzes.extend(result.get("Items", []))
 
-    # Never expose correct answers through the quiz endpoint.
     public_quizzes = []
 
     for quiz in quizzes:
@@ -64,21 +93,30 @@ def get_quizzes():
     })
 
 
-def submit_quiz(body):
-    quiz_id = body.get("quizId")
-    student_name = body.get("studentName", "").strip()
-    answers = body.get("answers")
+def submit_quiz(event, body):
+    # Identity comes from verified Cognito claims,
+    # never from user-supplied request fields.
+    user = get_authenticated_user(event)
 
-    if not quiz_id or not student_name or not isinstance(answers, dict):
-        return response(400, {
+    if not user:
+        return response(401, {
             "success": False,
-            "message": "quizId, studentName and answers are required."
+            "message": "Authentication is required."
         })
 
-    if len(student_name) > 100:
+    quiz_id = body.get("quizId")
+    answers = body.get("answers")
+
+    if not quiz_id or not isinstance(answers, dict):
         return response(400, {
             "success": False,
-            "message": "Student name must be 100 characters or fewer."
+            "message": "quizId and answers are required."
+        })
+
+    if not answers:
+        return response(400, {
+            "success": False,
+            "message": "At least one answer is required."
         })
 
     quiz_result = quiz_table.get_item(
@@ -128,8 +166,9 @@ def submit_quiz(body):
 
     result_item = {
         "resultId": result_id,
+        "studentId": user["userId"],
+        "studentEmail": user["email"],
         "quizId": quiz_id,
-        "studentName": student_name,
         "score": score,
         "totalQuestions": total,
         "percentage": Decimal(str(percentage)),
@@ -144,8 +183,9 @@ def submit_quiz(body):
         "message": "Quiz submitted successfully.",
         "result": {
             "resultId": result_id,
+            "studentId": user["userId"],
+            "studentEmail": user["email"],
             "quizId": quiz_id,
-            "studentName": student_name,
             "score": score,
             "totalQuestions": total,
             "percentage": percentage,
@@ -156,12 +196,22 @@ def submit_quiz(body):
 
 def lambda_handler(event, context):
     try:
-        method = event.get("requestContext", {}).get(
-            "http", {}
-        ).get("method", "")
+        method = (
+            event.get("requestContext", {})
+            .get("http", {})
+            .get("method", "")
+        )
 
         path = event.get("rawPath", "")
+        stage = event.get("requestContext", {}).get("stage", "")
 
+        # Remove the API Gateway stage prefix when present.
+        if stage and path == f"/{stage}":
+            path = "/"
+        elif stage and path.startswith(f"/{stage}/"):
+            path = path[len(stage) + 1:]
+
+        # Public health endpoint
         if method == "GET" and path == "/health":
             return response(200, {
                 "success": True,
@@ -169,18 +219,29 @@ def lambda_handler(event, context):
                 "timestamp": datetime.now(timezone.utc).isoformat()
             })
 
+        # Public quiz listing
         if method == "GET" and path == "/quizzes":
             return get_quizzes()
 
+        # Protected quiz submission
         if method == "POST" and path == "/submit":
+            if not get_authenticated_user(event):
+                return response(401, {
+                    "success": False,
+                    "message": "Authentication is required."
+                })
+
             raw_body = event.get("body") or "{}"
 
             if event.get("isBase64Encoded"):
                 import base64
-                raw_body = base64.b64decode(raw_body).decode("utf-8")
+                raw_body = base64.b64decode(
+                    raw_body
+                ).decode("utf-8")
 
             body = json.loads(raw_body)
-            return submit_quiz(body)
+
+            return submit_quiz(event, body)
 
         return response(404, {
             "success": False,
@@ -194,7 +255,9 @@ def lambda_handler(event, context):
         })
 
     except Exception:
-        print("Unexpected backend error:", __import__("traceback").format_exc())
+        print("Unexpected backend error:")
+        print(traceback.format_exc())
+
         return response(500, {
             "success": False,
             "message": "Internal server error."

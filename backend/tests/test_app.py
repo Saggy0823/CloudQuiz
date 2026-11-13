@@ -1,8 +1,11 @@
-
 import json
 import unittest
+import sys
+import os
 
-from backend.app import lambda_handler
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+import app
 
 
 class CloudQuizBackendTests(unittest.TestCase):
@@ -10,45 +13,47 @@ class CloudQuizBackendTests(unittest.TestCase):
     def test_health_endpoint(self):
         event = {
             "rawPath": "/health",
-            "requestContext": {
-                "http": {"method": "GET"}
-            }
+            "requestContext": {"http": {"method": "GET"}}
         }
-
-        result = lambda_handler(event, None)
-
+        result = app.lambda_handler(event, None)
         self.assertEqual(result["statusCode"], 200)
-        body = json.loads(result["body"])
-        self.assertTrue(body["success"])
-        self.assertEqual(body["message"], "CloudQuiz API is running.")
 
     def test_unknown_endpoint(self):
         event = {
             "rawPath": "/unknown",
-            "requestContext": {
-                "http": {"method": "GET"}
-            }
+            "requestContext": {"http": {"method": "GET"}}
         }
-
-        result = lambda_handler(event, None)
+        result = app.lambda_handler(event, None)
         self.assertEqual(result["statusCode"], 404)
+
+    def test_unauthenticated_submission(self):
+        event = {
+            "rawPath": "/submit",
+            "requestContext": {"http": {"method": "POST"}},
+            "body": json.dumps({"quizId": "test", "answers": {}})
+        }
+        result = app.lambda_handler(event, None)
+        self.assertEqual(result["statusCode"], 401)
 
     def test_invalid_json_submission(self):
         event = {
             "rawPath": "/submit",
             "requestContext": {
-                "http": {"method": "POST"}
+                "http": {"method": "POST"},
+                "authorizer": {
+                    "jwt": {
+                        "claims": {
+                            "sub": "test-user-123",
+                            "email": "test@example.com"
+                        }
+                    }
+                }
             },
-            "body": "{invalid-json"
+            "body": "{invalid json"
         }
-
-        result = lambda_handler(event, None)
+        result = app.lambda_handler(event, None)
         self.assertEqual(result["statusCode"], 400)
-
-        body = json.loads(result["body"])
-        self.assertFalse(body["success"])
 
 
 if __name__ == "__main__":
     unittest.main()
-

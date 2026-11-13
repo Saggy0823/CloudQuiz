@@ -5,7 +5,7 @@ Description: CloudQuiz - Cloud-Native Online Examination System
 
 Globals:
   Function:
-    Runtime: python3.12
+    Runtime: python3.13
     Timeout: 15
     MemorySize: 256
     Environment:
@@ -14,6 +14,10 @@ Globals:
         RESULTS_TABLE: !Ref ResultsTable
 
 Resources:
+
+  # ==========================================
+  # 1. DATABASE
+  # ==========================================
 
   QuizTable:
     Type: AWS::DynamoDB::Table
@@ -39,6 +43,53 @@ Resources:
         - AttributeName: resultId
           KeyType: HASH
 
+  # ==========================================
+  # 2. COGNITO AUTHENTICATION
+  # ==========================================
+
+  CloudQuizUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: CloudQuiz-Users-V2
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+
+  CloudQuizUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: CloudQuiz-Web-Client
+      UserPoolId: !Ref CloudQuizUserPool
+      GenerateSecret: false
+      PreventUserExistenceErrors: ENABLED
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      AccessTokenValidity: 60
+      IdTokenValidity: 60
+      RefreshTokenValidity: 30
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days
+
+  # ==========================================
+  # 3. API GATEWAY
+  # ==========================================
+
   CloudQuizApi:
     Type: AWS::Serverless::HttpApi
     Properties:
@@ -55,11 +106,25 @@ Resources:
           - POST
           - OPTIONS
         MaxAge: 600
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              issuer: !Sub
+                - https://cognito-idp.${AWS::Region}.amazonaws.com/${PoolId}
+                - PoolId: !Ref CloudQuizUserPool
+              audience:
+                - !Ref CloudQuizUserPoolClient
+
+  # ==========================================
+  # 4. LAMBDA BACKEND
+  # ==========================================
 
   CloudQuizFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: CloudQuizBackend
+      FunctionName: CloudQuizBackendV2
       CodeUri: ../backend/
       Handler: app.lambda_handler
       Policies:
@@ -67,6 +132,7 @@ Resources:
             TableName: !Ref QuizTable
         - DynamoDBCrudPolicy:
             TableName: !Ref ResultsTable
+
       Events:
         Health:
           Type: HttpApi
@@ -88,6 +154,12 @@ Resources:
             ApiId: !Ref CloudQuizApi
             Path: /submit
             Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
+
+# ==========================================
+# 5. OUTPUTS
+# ==========================================
 
 Outputs:
 
@@ -104,4 +176,12 @@ Outputs:
   ResultsTableName:
     Description: DynamoDB results table
     Value: !Ref ResultsTable
+
+  CognitoUserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref CloudQuizUserPool
+
+  CognitoClientId:
+    Description: Cognito Web Client ID
+    Value: !Ref CloudQuizUserPoolClient
 
