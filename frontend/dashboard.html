@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - CloudQuiz</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f4f7fb;color:#172033}
+header{background:#172554;color:white;padding:18px 7%;display:flex;justify-content:space-between;align-items:center}
+button{padding:11px 18px;border:0;border-radius:5px;background:#2563eb;color:white;cursor:pointer}
+.logout{background:#dc2626}
+main{max-width:1000px;margin:35px auto;padding:20px}
+.card{background:white;padding:22px;margin:15px 0;border-radius:8px;box-shadow:0 3px 12px #0001}
+.card h3{margin-top:0}
+#message{margin:20px 0;white-space:pre-wrap}
+</style>
+</head>
+<body>
+
+<header>
+<strong>CloudQuiz Dashboard</strong>
+<div>
+<span id="userEmail"></span>
+<button class="logout" onclick="logout()">Logout</button>
+</div>
+</header>
+
+<main>
+<h2>Welcome to CloudQuiz</h2>
+<p>Choose an examination below to begin.</p>
+
+<h3>Available Quizzes</h3>
+<div id="message">Loading quizzes...</div>
+<div id="quizList"></div>
+</main>
+
+<script>
+const API_URL = "https://6sjt9v5t1a.execute-api.ap-southeast-2.amazonaws.com/prod";
+
+const token = sessionStorage.getItem("cq_id_token");
+const expiry = Number(sessionStorage.getItem("cq_token_expiry") || 0);
+
+if (!token || Date.now() >= expiry) {
+    sessionStorage.clear();
+    window.location.replace("login.html");
+}
+
+document.getElementById("userEmail").textContent =
+    sessionStorage.getItem("cq_user_email") || "";
+
+function logout() {
+    sessionStorage.clear();
+    window.location.replace("login.html");
+}
+
+async function loadQuizzes() {
+    const message = document.getElementById("message");
+    const quizList = document.getElementById("quizList");
+
+    try {
+        const response = await fetch(`${API_URL}/quizzes`);
+
+        if (!response.ok) {
+            throw new Error("Unable to load quizzes. HTTP " + response.status);
+        }
+
+        const data = await response.json();
+
+        quizList.innerHTML = "";
+
+        if (!data.quizzes || data.quizzes.length === 0) {
+            message.textContent = "No quizzes are currently available.";
+            return;
+        }
+
+        message.textContent = data.quizzes.length + " quiz(es) available.";
+
+        data.quizzes.forEach(quiz => {
+            const card = document.createElement("div");
+            card.className = "card";
+
+            const title = document.createElement("h3");
+            title.textContent = quiz.title || "Untitled Quiz";
+
+            const description = document.createElement("p");
+            description.textContent = quiz.description || "No description available.";
+
+            const details = document.createElement("p");
+            details.textContent = (quiz.questions || []).length + " Questions";
+
+            const button = document.createElement("button");
+            button.textContent = "Start Quiz";
+            button.addEventListener("click", () => {
+                sessionStorage.setItem("cq_current_quiz", quiz.quizId);
+                window.location.href = "quiz.html";
+            });
+
+            card.append(title, description, details, button);
+            quizList.appendChild(card);
+        });
+
+    } catch (error) {
+        message.textContent = "Error: " + error.message;
+    }
+}
+
+loadQuizzes();
+</script>
+
+</body>
+</html>

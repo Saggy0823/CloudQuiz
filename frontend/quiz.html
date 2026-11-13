@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Take Quiz - CloudQuiz</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f4f7fb;color:#172033}
+header{background:#172554;color:white;padding:18px 7%}
+main{max-width:850px;margin:30px auto;padding:20px}
+.card{background:white;padding:22px;margin:18px 0;border-radius:8px;box-shadow:0 3px 12px #0001}
+.option{display:block;padding:12px;margin:9px 0;background:#f1f5f9;border-radius:5px;cursor:pointer}
+.option input{margin-right:10px}
+button{padding:12px 20px;background:#2563eb;color:white;border:0;border-radius:5px;cursor:pointer}
+button:disabled{opacity:.6}
+#message{white-space:pre-wrap;margin:15px 0}
+</style>
+</head>
+<body>
+
+<header><strong>CloudQuiz Examination</strong></header>
+
+<main>
+<h2 id="quizTitle">Loading Quiz...</h2>
+<p id="progress"></p>
+<div id="message">Please wait while questions load.</div>
+<form id="quizForm"></form>
+<button id="submitBtn" type="button" onclick="submitQuiz()" hidden>Submit Quiz</button>
+</main>
+
+<script>
+const API_URL = "https://6sjt9v5t1a.execute-api.ap-southeast-2.amazonaws.com/prod";
+
+const token = sessionStorage.getItem("cq_id_token");
+const expiry = Number(sessionStorage.getItem("cq_token_expiry") || 0);
+const quizId = sessionStorage.getItem("cq_current_quiz");
+
+let currentQuiz = null;
+let questions = [];
+
+if (!token || Date.now() >= expiry) {
+    sessionStorage.clear();
+    window.location.replace("login.html");
+}
+
+if (!quizId) {
+    window.location.replace("dashboard.html");
+}
+
+async function loadQuiz() {
+    const message = document.getElementById("message");
+
+    try {
+        const response = await fetch(`${API_URL}/quizzes`);
+
+        if (!response.ok) {
+            throw new Error("Unable to retrieve quizzes.");
+        }
+
+        const data = await response.json();
+
+        currentQuiz = (data.quizzes || []).find(q => q.quizId === quizId);
+
+        if (!currentQuiz) {
+            throw new Error("Selected quiz was not found.");
+        }
+
+        questions = currentQuiz.questions || [];
+
+        if (!questions.length) {
+            throw new Error("This quiz has no questions.");
+        }
+
+        document.getElementById("quizTitle").textContent = currentQuiz.title;
+        document.getElementById("progress").textContent =
+            questions.length + " questions";
+
+        renderQuestions();
+
+        message.textContent = "";
+        document.getElementById("submitBtn").hidden = false;
+
+    } catch (error) {
+        message.textContent = "Error: " + error.message;
+    }
+}
+
+function renderQuestions() {
+    const form = document.getElementById("quizForm");
+    form.innerHTML = "";
+
+    questions.forEach((question, index) => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const heading = document.createElement("h3");
+        heading.textContent = `${index + 1}. ${question.question}`;
+
+        card.appendChild(heading);
+
+        (question.options || []).forEach((option, optionIndex) => {
+            const label = document.createElement("label");
+            label.className = "option";
+
+            const input = document.createElement("input");
+            input.type = "radio";
+            input.name = question.questionId;
+            input.value = option;
+            input.required = true;
+
+            label.append(input, document.createTextNode(option));
+            card.appendChild(label);
+        });
+
+        form.appendChild(card);
+    });
+}
+
+async function submitQuiz() {
+    const form = document.getElementById("quizForm");
+    const message = document.getElementById("message");
+    const button = document.getElementById("submitBtn");
+
+    if (!form.reportValidity()) {
+        return;
+    }
+
+    const answers = {};
+
+    questions.forEach(question => {
+        const selected = form.querySelector(
+            `input[name="${CSS.escape(question.questionId)}"]:checked`
+        );
+
+        if (selected) {
+            answers[question.questionId] = selected.value;
+        }
+    });
+
+    button.disabled = true;
+    message.textContent = "Submitting your answers...";
+
+    try {
+        const response = await fetch(`${API_URL}/submit`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                quizId: quizId,
+                answers: answers
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(data.message || "Quiz submission failed.");
+        }
+
+        sessionStorage.setItem(
+            "cq_last_result",
+            JSON.stringify(data.result)
+        );
+
+        window.location.href = "result.html";
+
+    } catch (error) {
+        message.textContent = "Error: " + error.message;
+        button.disabled = false;
+    }
+}
+
+loadQuiz();
+</script>
+
+</body>
+</html>

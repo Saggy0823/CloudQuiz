@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudQuiz | Admin Overview</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f6fb;color:#172033}
+header{background:#172554;color:white;padding:20px 7%;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+header h2{margin:0}
+header a{color:white;text-decoration:none;margin-left:18px}
+main{max-width:1050px;margin:45px auto;padding:0 20px}
+h1{margin-bottom:8px}
+.muted{color:#64748b}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin:30px 0}
+.card{background:white;padding:25px;border-radius:14px;box-shadow:0 5px 20px #17255412}
+.card h3{margin:0 0 12px;color:#64748b;font-size:15px}
+.value{font-size:30px;font-weight:bold}
+.status{font-size:15px;margin-top:12px}
+.panel{background:white;padding:25px;border-radius:14px;box-shadow:0 5px 20px #17255412;margin-top:20px}
+button{background:#2563eb;color:white;border:0;border-radius:8px;padding:11px 17px;cursor:pointer}
+button:hover{background:#1d4ed8}
+#quizList{padding-left:20px;line-height:2}
+.note{background:#fff7ed;border-left:4px solid #f97316;padding:15px;border-radius:6px;margin-top:25px;color:#7c2d12}
+footer{text-align:center;color:#64748b;padding:35px}
+</style>
+</head>
+<body>
+<header>
+  <h2>☁ CloudQuiz Admin</h2>
+  <nav>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="index.html">Home</a>
+  </nav>
+</header>
+
+<main>
+  <h1>System Overview</h1>
+  <p class="muted">Monitor the CloudQuiz backend and published quizzes.</p>
+
+  <section class="cards">
+    <div class="card">
+      <h3>Backend API</h3>
+      <div class="value" id="apiStatus">Checking...</div>
+      <div class="status muted" id="apiMessage">Connecting to backend</div>
+    </div>
+    <div class="card">
+      <h3>Available Quizzes</h3>
+      <div class="value" id="quizCount">--</div>
+      <div class="status muted">Published quizzes</div>
+    </div>
+    <div class="card">
+      <h3>Application</h3>
+      <div class="value">CloudQuiz</div>
+      <div class="status muted">Online examination system</div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Published Quizzes</h2>
+    <p class="muted">Quizzes currently returned by the backend API.</p>
+    <ul id="quizList"><li>Loading quizzes...</li></ul>
+    <button id="refreshBtn" type="button">Refresh Overview</button>
+  </section>
+
+  <div class="note">
+    <strong>Admin functionality status:</strong>
+    This page currently provides read-only monitoring. Creating, editing,
+    deleting quizzes, and viewing all student results require secured admin
+    backend endpoints and role-based authorization, which are not configured yet.
+  </div>
+</main>
+
+<footer>CloudQuiz — Cloud-Native Online Examination System</footer>
+
+<script>
+const API_URL = "https://6sjt9v5t1a.execute-api.ap-southeast-2.amazonaws.com/prod";
+
+async function loadOverview() {
+  const apiStatus = document.getElementById("apiStatus");
+  const apiMessage = document.getElementById("apiMessage");
+  const quizCount = document.getElementById("quizCount");
+  const quizList = document.getElementById("quizList");
+
+  apiStatus.textContent = "Checking...";
+  apiMessage.textContent = "Connecting to backend";
+  quizCount.textContent = "--";
+  quizList.innerHTML = "<li>Loading quizzes...</li>";
+
+  try {
+    const [healthResponse, quizResponse] = await Promise.all([
+      fetch(API_URL + "/health"),
+      fetch(API_URL + "/quizzes")
+    ]);
+
+    if (healthResponse.ok) {
+      apiStatus.textContent = "Online";
+      apiMessage.textContent = "Backend health check successful";
+    } else {
+      apiStatus.textContent = "Error";
+      apiMessage.textContent = "Health check returned HTTP " + healthResponse.status;
+    }
+
+    if (!quizResponse.ok) {
+      throw new Error("Quiz API returned HTTP " + quizResponse.status);
+    }
+
+    const data = await quizResponse.json();
+    const quizzes = Array.isArray(data) ? data : (data.quizzes || []);
+
+    quizCount.textContent = quizzes.length;
+    quizList.innerHTML = "";
+
+    if (quizzes.length === 0) {
+      quizList.innerHTML = "<li>No quizzes are currently available.</li>";
+      return;
+    }
+
+    quizzes.forEach(quiz => {
+      const item = document.createElement("li");
+      item.textContent = (quiz.title || "Untitled Quiz") +
+        " — " + (quiz.questions ? quiz.questions.length : (quiz.questionCount || 0)) +
+        " questions";
+      quizList.appendChild(item);
+    });
+
+  } catch (error) {
+    apiStatus.textContent = "Unavailable";
+    apiMessage.textContent = error.message;
+    quizCount.textContent = "--";
+    quizList.innerHTML = "<li>Unable to load quizzes. Check the backend API.</li>";
+  }
+}
+
+document.getElementById("refreshBtn").addEventListener("click", loadOverview);
+loadOverview();
+</script>
+</body>
+</html>

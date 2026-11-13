@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Result - CloudQuiz</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f4f7fb;color:#172033}
+header{background:#172554;color:white;padding:18px 7%}
+main{max-width:600px;margin:55px auto;padding:25px}
+.card{background:white;padding:30px;border-radius:10px;box-shadow:0 3px 15px #0001;text-align:center}
+.score{font-size:48px;font-weight:bold;color:#2563eb;margin:20px}
+.detail{padding:12px;border-bottom:1px solid #e2e8f0;text-align:left}
+button{padding:13px 22px;background:#2563eb;color:white;border:0;border-radius:5px;cursor:pointer;margin-top:22px}
+</style>
+</head>
+<body>
+
+<header><strong>CloudQuiz - Examination Result</strong></header>
+
+<main>
+<div class="card">
+    <h2>Quiz Completed!</h2>
+    <p>Your examination result</p>
+
+    <div class="score" id="percentage">--%</div>
+
+    <div class="detail"><strong>Student:</strong> <span id="student"></span></div>
+    <div class="detail"><strong>Quiz ID:</strong> <span id="quiz"></span></div>
+    <div class="detail"><strong>Score:</strong> <span id="score"></span></div>
+    <div class="detail"><strong>Total Questions:</strong> <span id="total"></span></div>
+    <div class="detail"><strong>Result ID:</strong> <span id="resultId"></span></div>
+    <div class="detail"><strong>Submitted:</strong> <span id="date"></span></div>
+
+    <button onclick="location.href='dashboard.html'">Back to Dashboard</button>
+    <button onclick="logout()" style="background:#dc2626">Logout</button>
+</div>
+</main>
+
+<script>
+const token = sessionStorage.getItem("cq_id_token");
+const expiry = Number(sessionStorage.getItem("cq_token_expiry") || 0);
+
+if (!token || Date.now() >= expiry) {
+    sessionStorage.clear();
+    window.location.replace("login.html");
+}
+
+function logout() {
+    sessionStorage.clear();
+    window.location.replace("login.html");
+}
+
+const savedResult = sessionStorage.getItem("cq_last_result");
+
+if (!savedResult) {
+    document.querySelector(".card").innerHTML =
+        "<h2>No result available</h2><p>Please complete a quiz first.</p><button onclick=\"location.href='dashboard.html'\">Dashboard</button>";
+} else {
+    try {
+        const result = JSON.parse(savedResult);
+
+        document.getElementById("percentage").textContent =
+            Number(result.percentage).toFixed(2) + "%";
+
+        document.getElementById("student").textContent =
+            result.studentEmail || sessionStorage.getItem("cq_user_email") || "Student";
+
+        document.getElementById("quiz").textContent = result.quizId;
+        document.getElementById("score").textContent = result.score;
+        document.getElementById("total").textContent = result.totalQuestions;
+        document.getElementById("resultId").textContent = result.resultId;
+        document.getElementById("date").textContent =
+            new Date(result.submittedAt).toLocaleString();
+
+    } catch (error) {
+        document.querySelector(".card").innerHTML =
+            "<h2>Unable to display result</h2><p>Please return to the dashboard.</p><button onclick=\"location.href='dashboard.html'\">Dashboard</button>";
+    }
+}
+</script>
+
+</body>
+</html>
