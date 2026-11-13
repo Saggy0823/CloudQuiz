@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enter Private Test - CloudQuiz</title>
+
+<style>
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;margin:0;background:#f4f7fb;color:#172033}
+header{background:#172554;color:white;padding:18px 7%;display:flex;justify-content:space-between;align-items:center}
+header a{color:white;text-decoration:none}
+main{max-width:520px;margin:65px auto;padding:20px}
+.card{background:white;padding:30px;border-radius:12px;box-shadow:0 4px 18px #0001}
+h2{margin-top:0}
+p{color:#64748b;line-height:1.5}
+label{display:block;margin:18px 0 7px;font-weight:bold}
+input{width:100%;padding:13px;border:1px solid #cbd5e1;border-radius:6px;font-size:15px}
+button{width:100%;margin-top:22px;padding:13px;background:#2563eb;color:white;border:0;border-radius:6px;font-size:15px;cursor:pointer}
+button:disabled{opacity:.6;cursor:not-allowed}
+#message{margin-top:18px;white-space:pre-wrap;line-height:1.5}
+.error{color:#dc2626}
+.success{color:#15803d}
+.back{display:inline-block;margin-top:20px;color:#2563eb;text-decoration:none}
+</style>
+</head>
+
+<body>
+
+<header>
+<strong>CloudQuiz</strong>
+<a href="dashboard.html">Back to Dashboard</a>
+</header>
+
+<main>
+<div class="card">
+<h2>Join a Private Test</h2>
+<p>Enter the test ID and unique access key provided by your test creator.</p>
+
+<form id="accessForm">
+<label for="quizId">Test ID</label>
+<input id="quizId" type="text" placeholder="Enter test ID" required autocomplete="off">
+
+<label for="accessKey">Access Key</label>
+<input id="accessKey" type="text" placeholder="Enter access key" required autocomplete="off">
+
+<button id="submitBtn" type="submit">Verify and Start Test</button>
+</form>
+
+<div id="message" role="status"></div>
+<a class="back" href="dashboard.html">← Return to Dashboard</a>
+</div>
+</main>
+
+<script>
+const API_URL = "https://6sjt9v5t1a.execute-api.ap-southeast-2.amazonaws.com/prod";
+
+const token = sessionStorage.getItem("cq_id_token");
+const expiry = Number(sessionStorage.getItem("cq_token_expiry") || 0);
+
+if (!token || Date.now() >= expiry) {
+    sessionStorage.clear();
+    window.location.replace("login.html");
+}
+
+const form = document.getElementById("accessForm");
+const button = document.getElementById("submitBtn");
+const message = document.getElementById("message");
+
+form.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const quizId = document.getElementById("quizId").value.trim();
+    const accessKey = document.getElementById("accessKey").value.trim();
+
+    if (!quizId || !accessKey) {
+        message.className = "error";
+        message.textContent = "Please enter both the test ID and access key.";
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Verifying...";
+    message.className = "";
+    message.textContent = "Checking your test access...";
+
+    try {
+        const response = await fetch(`${API_URL}/tests/access`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                quizId: quizId,
+                accessKey: accessKey
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success || !data.test) {
+            throw new Error(data.message || "Unable to access this test.");
+        }
+
+        if (!data.test.questions || data.test.questions.length === 0) {
+            throw new Error("This test does not contain any questions.");
+        }
+
+        sessionStorage.setItem("cq_current_quiz", quizId);
+        sessionStorage.setItem("cq_private_test", JSON.stringify(data.test));
+        sessionStorage.setItem("cq_private_access_key", accessKey);
+
+        message.className = "success";
+        message.textContent = "Access verified! Opening your test...";
+
+        window.location.href = "quiz.html";
+
+    } catch (error) {
+        message.className = "error";
+        message.textContent = error.message;
+        button.disabled = false;
+        button.textContent = "Verify and Start Test";
+    }
+});
+</script>
+
+</body>
+</html>

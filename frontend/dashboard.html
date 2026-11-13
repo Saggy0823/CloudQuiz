@@ -5,33 +5,73 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard - CloudQuiz</title>
 <style>
+*{box-sizing:border-box}
 body{font-family:Arial,sans-serif;margin:0;background:#f4f7fb;color:#172033}
-header{background:#172554;color:white;padding:18px 7%;display:flex;justify-content:space-between;align-items:center}
-button{padding:11px 18px;border:0;border-radius:5px;background:#2563eb;color:white;cursor:pointer}
+header{background:#172554;color:white;padding:18px 7%;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
+header strong{font-size:21px}
+.header-right{display:flex;align-items:center;gap:15px;flex-wrap:wrap}
+button,.action-link{padding:11px 18px;border:0;border-radius:6px;background:#2563eb;color:white;cursor:pointer;text-decoration:none;display:inline-block;font-size:14px}
+button:hover,.action-link:hover{opacity:.88}
 .logout{background:#dc2626}
-main{max-width:1000px;margin:35px auto;padding:20px}
-.card{background:white;padding:22px;margin:15px 0;border-radius:8px;box-shadow:0 3px 12px #0001}
-.card h3{margin-top:0}
-#message{margin:20px 0;white-space:pre-wrap}
+main{max-width:1050px;margin:35px auto;padding:20px}
+.welcome{margin-bottom:28px}
+.welcome p{color:#64748b}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin:22px 0 35px}
+.mode-card,.quiz-card{background:white;padding:23px;border-radius:10px;box-shadow:0 3px 12px #0001}
+.mode-card h3{margin-top:0}
+.mode-card p{color:#64748b;line-height:1.5;min-height:45px}
+.mode-card .action-link{margin-top:8px}
+.section-heading{margin-top:35px}
+#message{margin:18px 0;color:#475569;white-space:pre-wrap}
+#quizList{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.quiz-card h3{margin-top:0}
+.quiz-card p{color:#64748b;line-height:1.5}
+.quiz-details{font-size:13px;color:#64748b;margin-bottom:17px}
+.empty{background:white;padding:20px;border-radius:8px;color:#64748b}
+@media(max-width:600px){header{padding:16px 5%}main{margin:20px auto;padding:16px}.header-right{width:100%;justify-content:space-between}}
 </style>
 </head>
 <body>
 
 <header>
-<strong>CloudQuiz Dashboard</strong>
-<div>
+<strong>CloudQuiz</strong>
+<div class="header-right">
 <span id="userEmail"></span>
 <button class="logout" onclick="logout()">Logout</button>
 </div>
 </header>
 
 <main>
+<section class="welcome">
 <h2>Welcome to CloudQuiz</h2>
-<p>Choose an examination below to begin.</p>
+<p>Your online examination platform. Choose how you want to continue.</p>
+</section>
 
-<h3>Available Quizzes</h3>
+<section class="modes">
+<div class="mode-card">
+<h3>Student Mode</h3>
+<p>Explore available public examinations and test your knowledge.</p>
+<a class="action-link" href="#public-quizzes">Browse Public Tests</a>
+</div>
+
+<div class="mode-card">
+<h3>Private Test</h3>
+<p>Attempt an invitation-only examination using its test ID and access key.</p>
+<a class="action-link" href="enter-test.html">Enter Private Test</a>
+</div>
+
+<div class="mode-card">
+<h3>Test Builder</h3>
+<p>Create your own examinations, choose visibility, set attempt limits, and review student results.</p>
+<a class="action-link" href="builder.html">Open Test Builder</a>
+</div>
+</section>
+
+<section id="public-quizzes">
+<h2 class="section-heading">Available Public Quizzes</h2>
 <div id="message">Loading quizzes...</div>
 <div id="quizList"></div>
+</section>
 </main>
 
 <script>
@@ -65,37 +105,43 @@ async function loadQuizzes() {
         }
 
         const data = await response.json();
-
         quizList.innerHTML = "";
 
         if (!data.quizzes || data.quizzes.length === 0) {
-            message.textContent = "No quizzes are currently available.";
+            message.textContent = "No public quizzes are currently available.";
+            quizList.innerHTML =
+                '<div class="empty">New public quizzes will appear here when available.</div>';
             return;
         }
 
-        message.textContent = data.quizzes.length + " quiz(es) available.";
+        message.textContent = data.quizzes.length + " public quiz(es) available.";
 
         data.quizzes.forEach(quiz => {
             const card = document.createElement("div");
-            card.className = "card";
+            card.className = "quiz-card";
 
             const title = document.createElement("h3");
             title.textContent = quiz.title || "Untitled Quiz";
 
             const description = document.createElement("p");
-            description.textContent = quiz.description || "No description available.";
+            description.textContent =
+                quiz.description || "No description available.";
 
-            const details = document.createElement("p");
-            details.textContent = (quiz.questions || []).length + " Questions";
+            const details = document.createElement("div");
+            details.className = "quiz-details";
+            details.textContent =
+                (quiz.questions || []).length + " Questions";
 
-            const button = document.createElement("button");
-            button.textContent = "Start Quiz";
-            button.addEventListener("click", () => {
+            const startButton = document.createElement("button");
+            startButton.textContent = "Start Quiz";
+            startButton.addEventListener("click", () => {
+                sessionStorage.removeItem("cq_private_test");
+                sessionStorage.removeItem("cq_private_access_key");
                 sessionStorage.setItem("cq_current_quiz", quiz.quizId);
                 window.location.href = "quiz.html";
             });
 
-            card.append(title, description, details, button);
+            card.append(title, description, details, startButton);
             quizList.appendChild(card);
         });
 

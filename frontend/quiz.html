@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Take Quiz - CloudQuiz</title>
 <style>
+*{box-sizing:border-box}
 body{font-family:Arial,sans-serif;margin:0;background:#f4f7fb;color:#172033}
-header{background:#172554;color:white;padding:18px 7%}
+header{background:#172554;color:white;padding:18px 7%;display:flex;justify-content:space-between}
 main{max-width:850px;margin:30px auto;padding:20px}
 .card{background:white;padding:22px;margin:18px 0;border-radius:8px;box-shadow:0 3px 12px #0001}
 .option{display:block;padding:12px;margin:9px 0;background:#f1f5f9;border-radius:5px;cursor:pointer}
@@ -14,11 +15,15 @@ main{max-width:850px;margin:30px auto;padding:20px}
 button{padding:12px 20px;background:#2563eb;color:white;border:0;border-radius:5px;cursor:pointer}
 button:disabled{opacity:.6}
 #message{white-space:pre-wrap;margin:15px 0}
+.back{color:#2563eb;text-decoration:none}
 </style>
 </head>
 <body>
 
-<header><strong>CloudQuiz Examination</strong></header>
+<header>
+<strong>CloudQuiz Examination</strong>
+<a class="back" href="dashboard.html">Dashboard</a>
+</header>
 
 <main>
 <h2 id="quizTitle">Loading Quiz...</h2>
@@ -34,6 +39,8 @@ const API_URL = "https://6sjt9v5t1a.execute-api.ap-southeast-2.amazonaws.com/pro
 const token = sessionStorage.getItem("cq_id_token");
 const expiry = Number(sessionStorage.getItem("cq_token_expiry") || 0);
 const quizId = sessionStorage.getItem("cq_current_quiz");
+const privateTestData = sessionStorage.getItem("cq_private_test");
+const privateAccessKey = sessionStorage.getItem("cq_private_access_key");
 
 let currentQuiz = null;
 let questions = [];
@@ -51,27 +58,42 @@ async function loadQuiz() {
     const message = document.getElementById("message");
 
     try {
-        const response = await fetch(`${API_URL}/quizzes`);
+        if (privateTestData) {
+            // Private test was already verified by enter-test.html.
+            currentQuiz = JSON.parse(privateTestData);
 
-        if (!response.ok) {
-            throw new Error("Unable to retrieve quizzes.");
-        }
+            if (currentQuiz.quizId !== quizId) {
+                throw new Error("Private test session does not match.");
+            }
 
-        const data = await response.json();
+        } else {
+            // Public test: retrieve it from the public quiz list.
+            const response = await fetch(`${API_URL}/quizzes`);
 
-        currentQuiz = (data.quizzes || []).find(q => q.quizId === quizId);
+            if (!response.ok) {
+                throw new Error("Unable to retrieve public quizzes.");
+            }
 
-        if (!currentQuiz) {
-            throw new Error("Selected quiz was not found.");
+            const data = await response.json();
+
+            currentQuiz = (data.quizzes || []).find(
+                quiz => quiz.quizId === quizId
+            );
+
+            if (!currentQuiz) {
+                throw new Error("Selected quiz was not found.");
+            }
         }
 
         questions = currentQuiz.questions || [];
 
         if (!questions.length) {
-            throw new Error("This quiz has no questions.");
+            throw new Error("This test has no questions.");
         }
 
-        document.getElementById("quizTitle").textContent = currentQuiz.title;
+        document.getElementById("quizTitle").textContent =
+            currentQuiz.title || "CloudQuiz Examination";
+
         document.getElementById("progress").textContent =
             questions.length + " questions";
 
@@ -98,7 +120,7 @@ function renderQuestions() {
 
         card.appendChild(heading);
 
-        (question.options || []).forEach((option, optionIndex) => {
+        (question.options || []).forEach(option => {
             const label = document.createElement("label");
             label.className = "option";
 
@@ -140,6 +162,23 @@ async function submitQuiz() {
     button.disabled = true;
     message.textContent = "Submitting your answers...";
 
+    const submission = {
+        quizId: quizId,
+        answers: answers
+    };
+
+    // Private tests require the same key during submission.
+    if (privateTestData) {
+        if (!privateAccessKey) {
+            message.textContent =
+                "Private test access key is missing. Please enter the test again.";
+            button.disabled = false;
+            return;
+        }
+
+        submission.accessKey = privateAccessKey;
+    }
+
     try {
         const response = await fetch(`${API_URL}/submit`, {
             method: "POST",
@@ -147,10 +186,7 @@ async function submitQuiz() {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
-            body: JSON.stringify({
-                quizId: quizId,
-                answers: answers
-            })
+            body: JSON.stringify(submission)
         });
 
         const data = await response.json();
@@ -163,6 +199,10 @@ async function submitQuiz() {
             "cq_last_result",
             JSON.stringify(data.result)
         );
+
+        // Remove private credentials after successful submission.
+        sessionStorage.removeItem("cq_private_test");
+        sessionStorage.removeItem("cq_private_access_key");
 
         window.location.href = "result.html";
 

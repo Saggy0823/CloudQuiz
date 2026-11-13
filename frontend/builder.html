@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test Builder - CloudQuiz</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}
+header{background:#172554;color:white;padding:17px 6%;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+header a{color:white;text-decoration:none}
+.header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+button,.link-button{border:0;border-radius:6px;padding:11px 16px;background:#2563eb;color:white;cursor:pointer;font-size:14px;text-decoration:none;display:inline-block}
+button:hover,.link-button:hover{opacity:.88}
+button:disabled{opacity:.5;cursor:not-allowed}
+.danger{background:#dc2626}
+.secondary{background:#475569}
+main{max-width:1050px;margin:30px auto;padding:18px}
+.panel{background:white;border-radius:10px;padding:23px;margin-bottom:23px;box-shadow:0 3px 12px #0001}
+h2{margin-top:0}
+label{display:block;font-weight:bold;margin:14px 0 7px}
+input,textarea,select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;background:white}
+textarea{resize:vertical;min-height:75px}
+.grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.question-card{border:1px solid #dbe3ee;padding:17px;border-radius:8px;margin:17px 0;background:#fbfdff}
+.question-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.option-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin:9px 0}
+.option-row button{padding:8px 12px}
+.correct-select{margin-top:8px}
+.form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+#message{white-space:pre-wrap;margin:14px 0;color:#475569}
+.notice{padding:15px;border-radius:7px;background:#eff6ff;color:#1e40af;margin:15px 0;overflow-wrap:anywhere}
+.key-box{background:#ecfdf5;color:#065f46;padding:18px;border-radius:8px;margin-top:16px;overflow-wrap:anywhere}
+.key-value{font-size:20px;font-weight:bold;letter-spacing:1px;margin:12px 0}
+.test-card{border:1px solid #e2e8f0;border-radius:8px;padding:17px;margin:13px 0}
+.test-card h3{margin:0 0 9px}
+.test-meta{color:#64748b;font-size:13px;line-height:1.7}
+.test-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{text-align:left;padding:12px;border-bottom:1px solid #e2e8f0;font-size:14px}
+th{background:#f8fafc}
+.empty{color:#64748b;padding:15px 0}
+.hidden{display:none}
+@media(max-width:650px){main{padding:12px}.panel{padding:16px}.grid{grid-template-columns:1fr}header{padding:15px 5%}}
+</style>
+</head>
+<body>
+
+<header>
+<strong><a href="dashboard.html">CloudQuiz / Test Builder</a></strong>
+<div class="header-actions">
+<a class="link-button secondary" href="dashboard.html">Dashboard</a>
+<button class="danger" onclick="logout()">Logout</button>
+</div>
+</header>
+
+<main>
+
+<section class="panel">
+<h2>Create a New Examination</h2>
+<p>Create an MCQ examination and decide whether it should be public or private.</p>
+
+<form id="testForm">
+<div class="grid">
+<div>
+<label for="testTitle">Test Title</label>
+<input id="testTitle" maxlength="150" required placeholder="Example: Cloud Computing Unit 6">
+</div>
+<div>
+<label for="maxAttempts">Maximum Attempts</label>
+<input id="maxAttempts" type="number" min="1" max="100" value="1" required>
+</div>
+</div>
+
+<label for="description">Description</label>
+<textarea id="description" maxlength="1000" placeholder="Describe this examination..."></textarea>
+
+<label for="visibility">Test Visibility</label>
+<select id="visibility">
+<option value="public">Public - Visible to students</option>
+<option value="private">Private - Requires an access key</option>
+</select>
+
+<h3>Questions</h3>
+<div id="questions"></div>
+
+<button type="button" class="secondary" id="addQuestion">+ Add Question</button>
+
+<div class="form-actions">
+<button type="submit" id="createButton">Create Examination</button>
+</div>
+<div id="message" role="status"></div>
+</form>
+
+<div id="createdKey" class="key-box hidden">
+<h3>Private Test Created Successfully</h3>
+<p>Copy this access key now. It is displayed only once and is not stored by this page.</p>
+<div class="key-value" id="keyValue"></div>
+<p><strong>Test ID:</strong> <span id="createdQuizId"></span></p>
+<button type="button" id="copyKeyButton">Copy Access Key</button>
+</div>
+</section>
+
+<section class="panel">
+<h2>My Examinations</h2>
+<p>View the examinations you have created and check student submissions.</p>
+<button type="button" id="refreshTests" class="secondary">Refresh My Tests</button>
+<div id="myTestsMessage" class="empty">Loading your examinations...</div>
+<div id="myTests"></div>
+</section>
+
+<section class="panel hidden" id="resultsPanel">
+<h2 id="resultsTitle">Student Results</h2>
+<p id="resultsSummary"></p>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Student Email</th>
+<th>Score</th>
+<th>Percentage</th>
+<th>Attempt</th>
+<th>Submitted At</th>
+</tr>
+</thead>
+<tbody id="resultsBody"></tbody>
+</table>
+</div>
+<button type="button" class="secondary" id="closeResults" style="margin-top:15px">Close Results</button>
+</section>
+
+</main>
+
+<script>
+const API_URL = "https://6sjt9v5t1a.execute-api.ap-southeast-2.amazonaws.com/prod";
+
+const token = sessionStorage.getItem("cq_id_token");
+const expiry = Number(sessionStorage.getItem("cq_token_expiry") || 0);
+
+if (!token || Date.now() >= expiry) {
+    sessionStorage.clear();
+    window.location.replace("login.html");
+}
+
+function logout() {
+    sessionStorage.clear();
+    window.location.replace("login.html");
+}
+
+function authHeaders() {
+    return {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + token
+    };
+}
+
+async function apiRequest(path, options = {}) {
+    const response = await fetch(API_URL + path, {
+        ...options,
+        headers: {
+            ...authHeaders(),
+            ...(options.headers || {})
+        }
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || data.success === false) {
+        throw new Error(data.message || "Request failed. HTTP " + response.status);
+    }
+
+    return data;
+}
+
+// =====================================================
+// QUESTION BUILDER
+// =====================================================
+
+let questionCounter = 0;
+
+function createQuestion() {
+    questionCounter++;
+
+    const card = document.createElement("div");
+    card.className = "question-card";
+
+    const top = document.createElement("div");
+    top.className = "question-top";
+
+    const heading = document.createElement("h4");
+    heading.textContent = "Question " + questionCounter;
+
+    const removeButton = document.createElement("button");
+    removeButton.type = "button";
+    removeButton.className = "danger";
+    removeButton.textContent = "Remove";
+    removeButton.addEventListener("click", () => {
+        card.remove();
+        renumberQuestions();
+    });
+
+    top.append(heading, removeButton);
+
+    const questionLabel = document.createElement("label");
+    questionLabel.textContent = "Question Text";
+
+    const questionInput = document.createElement("textarea");
+    questionInput.className = "question-text";
+    questionInput.required = true;
+    questionInput.maxLength = 2000;
+    questionInput.placeholder = "Enter your question...";
+
+    const optionsHeading = document.createElement("label");
+    optionsHeading.textContent = "Answer Options";
+
+    const optionsContainer = document.createElement("div");
+    optionsContainer.className = "options-container";
+
+    const addOptionButton = document.createElement("button");
+    addOptionButton.type = "button";
+    addOptionButton.className = "secondary";
+    addOptionButton.textContent = "+ Add Option";
+
+    const correctLabel = document.createElement("label");
+    correctLabel.textContent = "Correct Answer";
+
+    const correctSelect = document.createElement("select");
+    correctSelect.className = "correct-select";
+    correctSelect.required = true;
+
+    function refreshCorrectOptions() {
+        const previous = correctSelect.value;
+        const inputs = optionsContainer.querySelectorAll(".option-input");
+
+        correctSelect.innerHTML = "";
+
+        inputs.forEach((input, index) => {
+            const option = document.createElement("option");
+            option.value = input.value.trim();
+            option.textContent = input.value.trim()
+                ? "Option " + (index + 1) + ": " + input.value.trim()
+                : "Option " + (index + 1);
+
+            correctSelect.appendChild(option);
+        });
+
+        if ([...correctSelect.options].some(o => o.value === previous)) {
+            correctSelect.value = previous;
+        }
+    }
+
+    function addOption(value = "") {
+        if (optionsContainer.children.length >= 10) {
+            alert("Maximum 10 options allowed per question.");
+            return;
+        }
+
+        const row = document.createElement("div");
+        row.className = "option-row";
+
+        const input = document.createElement("input");
+        input.className = "option-input";
+        input.required = true;
+        input.maxLength = 500;
+        input.placeholder = "Enter option";
+        input.value = value;
+        input.addEventListener("input", refreshCorrectOptions);
+
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.className = "danger";
+        remove.textContent = "X";
+        remove.title = "Remove option";
+
+        remove.addEventListener("click", () => {
+            if (optionsContainer.children.length <= 2) {
+                alert("Each question needs at least 2 options.");
+                return;
+            }
+            row.remove();
+            refreshCorrectOptions();
+        });
+
+        row.append(input, remove);
+        optionsContainer.appendChild(row);
+        refreshCorrectOptions();
+    }
+
+    addOptionButton.addEventListener("click", () => addOption());
+
+    card.append(
+        top,
+        questionLabel,
+        questionInput,
+        optionsHeading,
+        optionsContainer,
+        addOptionButton,
+        correctLabel,
+        correctSelect
+    );
+
+    addOption();
+    addOption();
+    addOption();
+    addOption();
+
+    document.getElementById("questions").appendChild(card);
+    renumberQuestions();
+}
+
+function renumberQuestions() {
+    document.querySelectorAll(".question-card").forEach((card, index) => {
+        card.querySelector("h4").textContent = "Question " + (index + 1);
+    });
+}
+
+document.getElementById("addQuestion").addEventListener("click", () => {
+    if (document.querySelectorAll(".question-card").length >= 200) {
+        alert("Maximum 200 questions allowed.");
+        return;
+    }
+    createQuestion();
+});
+
+createQuestion();
+
+function collectQuestions() {
+    const cards = [...document.querySelectorAll(".question-card")];
+
+    if (cards.length < 1 || cards.length > 200) {
+        throw new Error("Add between 1 and 200 questions.");
+    }
+
+    return cards.map((card, index) => {
+        const question = card.querySelector(".question-text").value.trim();
+
+        const options = [...card.querySelectorAll(".option-input")]
+            .map(input => input.value.trim());
+
+        const correctAnswer = card.querySelector(".correct-select").value;
+
+        if (!question) {
+            throw new Error("Enter the text for Question " + (index + 1) + ".");
+        }
+
+        if (options.some(option => !option)) {
+            throw new Error("Fill all options in Question " + (index + 1) + ".");
+        }
+
+        if (new Set(options).size !== options.length) {
+            throw new Error("Duplicate options found in Question " + (index + 1) + ".");
+        }
+
+        if (!options.includes(correctAnswer)) {
+            throw new Error("Select a valid correct answer for Question " + (index + 1) + ".");
+        }
+
+        return {
+            question,
+            options,
+            correctAnswer
+        };
+    });
+}
+
+// =====================================================
+// CREATE TEST
+// =====================================================
+
+document.getElementById("testForm").addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const message = document.getElementById("message");
+    const button = document.getElementById("createButton");
+    const keyPanel = document.getElementById("createdKey");
+
+    message.textContent = "";
+    keyPanel.classList.add("hidden");
+
+    try {
+        const title = document.getElementById("testTitle").value.trim();
+        const description = document.getElementById("description").value.trim();
+        const visibility = document.getElementById("visibility").value;
+        const maxAttempts = Number(document.getElementById("maxAttempts").value);
+
+        if (!title) {
+            throw new Error("Enter a test title.");
+        }
+
+        if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 100) {
+            throw new Error("Maximum attempts must be between 1 and 100.");
+        }
+
+        const questions = collectQuestions();
+
+        const payload = {
+            title,
+            description,
+            visibility,
+            maxAttempts,
+            questions
+        };
+
+        button.disabled = true;
+        button.textContent = "Creating...";
+
+        const data = await apiRequest("/tests", {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+
+        const test = data.test;
+
+        message.textContent = data.message || "Test created successfully.";
+
+        if (test.accessKey) {
+            document.getElementById("keyValue").textContent = test.accessKey;
+            document.getElementById("createdQuizId").textContent = test.quizId;
+            keyPanel.classList.remove("hidden");
+        } else {
+            message.textContent += " Test ID: " + test.quizId;
+        }
+
+        document.getElementById("testForm").reset();
+        document.getElementById("questions").innerHTML = "";
+        questionCounter = 0;
+        createQuestion();
+
+        await loadMyTests();
+
+    } catch (error) {
+        message.textContent = "Error: " + error.message;
+    } finally {
+        button.disabled = false;
+        button.textContent = "Create Examination";
+    }
+});
+
+// =====================================================
+// PRIVATE KEY COPY
+// =====================================================
+
+document.getElementById("copyKeyButton").addEventListener("click", async () => {
+    const key = document.getElementById("keyValue").textContent;
+
+    try {
+        await navigator.clipboard.writeText(key);
+        alert("Access key copied. Save it securely.");
+    } catch {
+        alert("Automatic copy failed. Select and copy the displayed key manually.");
+    }
+});
+
+// =====================================================
+// LOAD MY TESTS
+// =====================================================
+
+async function loadMyTests() {
+    const message = document.getElementById("myTestsMessage");
+    const container = document.getElementById("myTests");
+
+    message.textContent = "Loading your examinations...";
+    container.innerHTML = "";
+
+    try {
+        const data = await apiRequest("/my-tests");
+        const tests = data.tests || [];
+
+        if (tests.length === 0) {
+            message.textContent = "You have not created any examinations yet.";
+            return;
+        }
+
+        message.textContent = tests.length + " examination(s) created.";
+
+        tests.forEach(test => {
+            const card = document.createElement("div");
+            card.className = "test-card";
+
+            const title = document.createElement("h3");
+            title.textContent = test.title || "Untitled Test";
+
+            const details = document.createElement("div");
+            details.className = "test-meta";
+            details.textContent =
+                "ID: " + test.quizId +
+                " | Visibility: " + test.visibility +
+                " | Status: " + test.status +
+                " | Questions: " + test.questionCount +
+                " | Maximum attempts: " + test.maxAttempts;
+
+            const date = document.createElement("div");
+            date.className = "test-meta";
+            date.textContent = "Created: " + (test.createdAt || "Unknown");
+
+            const actions = document.createElement("div");
+            actions.className = "test-actions";
+
+            const resultsButton = document.createElement("button");
+            resultsButton.textContent = "View Student Results";
+            resultsButton.addEventListener("click", () => loadResults(test));
+            actions.appendChild(resultsButton);
+
+            if (test.status !== "deleted") {
+                const statusButton = document.createElement("button");
+                statusButton.textContent =
+                    test.status === "closed" ? "Reopen Test" : "Close Test";
+
+                statusButton.addEventListener("click", async () => {
+                    const newStatus =
+                        test.status === "closed" ? "active" : "closed";
+
+                    statusButton.disabled = true;
+
+                    try {
+                        await apiRequest(
+                            "/tests/" + encodeURIComponent(test.quizId),
+                            {
+                                method: "PATCH",
+                                body: JSON.stringify({ status: newStatus })
+                            }
+                        );
+
+                        alert("Test " + newStatus + " successfully.");
+                        await loadMyTests();
+                    } catch (error) {
+                        alert("Could not update test: " + error.message);
+                        statusButton.disabled = false;
+                    }
+                });
+
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete Test";
+
+                deleteButton.addEventListener("click", async () => {
+                    const confirmed = confirm(
+                        'Delete "' + (test.title || "this test") +
+                        '"? Students will no longer be able to access it. ' +
+                        "Historical results will be preserved."
+                    );
+
+                    if (!confirmed) return;
+
+                    deleteButton.disabled = true;
+
+                    try {
+                        await apiRequest(
+                            "/tests/" + encodeURIComponent(test.quizId),
+                            { method: "DELETE" }
+                        );
+
+                        alert("Test deleted. Historical results are preserved.");
+                        await loadMyTests();
+                    } catch (error) {
+                        alert("Could not delete test: " + error.message);
+                        deleteButton.disabled = false;
+                    }
+                });
+
+                actions.append(statusButton, deleteButton);
+            } else {
+                const deletedLabel = document.createElement("span");
+                deletedLabel.textContent = "Deleted";
+                deletedLabel.className = "test-meta";
+                actions.appendChild(deletedLabel);
+            }
+
+            card.append(title, details, date, actions);
+            container.appendChild(card);
+        });
+
+    } catch (error) {
+        message.textContent = "Error: " + error.message;
+    }
+}
+document.getElementById("refreshTests").addEventListener("click", loadMyTests);
+
+// =====================================================
+// VIEW STUDENT RESULTS
+// =====================================================
+
+async function loadResults(test) {
+    const panel = document.getElementById("resultsPanel");
+    const title = document.getElementById("resultsTitle");
+    const summary = document.getElementById("resultsSummary");
+    const body = document.getElementById("resultsBody");
+
+    panel.classList.remove("hidden");
+    title.textContent = "Results: " + test.title;
+    summary.textContent = "Loading student submissions...";
+    body.innerHTML = "";
+
+    panel.scrollIntoView({behavior:"smooth", block:"start"});
+
+    try {
+        const data = await apiRequest(
+            "/tests/" + encodeURIComponent(test.quizId) + "/results"
+        );
+
+        summary.textContent =
+            (data.count || 0) + " submission(s) received.";
+
+        if (!data.results || data.results.length === 0) {
+            const row = document.createElement("tr");
+            const cell = document.createElement("td");
+            cell.colSpan = 5;
+            cell.textContent = "No students have submitted this test yet.";
+            row.appendChild(cell);
+            body.appendChild(row);
+            return;
+        }
+
+        data.results.forEach(student => {
+            const row = document.createElement("tr");
+
+            const values = [
+                student.studentEmail || "Unknown",
+                student.score + " / " + student.totalQuestions,
+                Number(student.percentage || 0).toFixed(2) + "%",
+                student.attemptNumber,
+                student.submittedAt || "Unknown"
+            ];
+
+            values.forEach(value => {
+                const cell = document.createElement("td");
+                cell.textContent = value;
+                row.appendChild(cell);
+            });
+
+            body.appendChild(row);
+        });
+
+    } catch (error) {
+        summary.textContent = "Error: " + error.message;
+    }
+}
+
+document.getElementById("closeResults").addEventListener("click", () => {
+    document.getElementById("resultsPanel").classList.add("hidden");
+});
+
+loadMyTests();
+</script>
+
+</body>
+</html>
