@@ -1,0 +1,31 @@
+<CodeBlock language="gitignore" editable>
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+
+AWS SAM
+.aws-sam/
+samconfig.toml
+IDE
+.vscode/
+.idea/
+Build files
+node_modules/
+dist/
+build/
+Logs
+*.log
+Secrets
+*.pem
+*.key
+credentials.json
+OS
+.DS_Store
+Thumbs.db
+desktop.ini
+</CodeBlock>
