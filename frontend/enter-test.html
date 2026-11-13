@@ -1,128 +1,1129 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Enter Private Test - CloudQuiz</title>
+<meta name="theme-color" content="#080d1b">
+<title>Private Test Access | CloudQuiz</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-*{box-sizing:border-box}
-body{font-family:Arial,sans-serif;margin:0;background:#f4f7fb;color:#172033}
-header{background:#172554;color:white;padding:18px 7%;display:flex;justify-content:space-between;align-items:center}
-header a{color:white;text-decoration:none}
-main{max-width:520px;margin:65px auto;padding:20px}
-.card{background:white;padding:30px;border-radius:12px;box-shadow:0 4px 18px #0001}
-h2{margin-top:0}
-p{color:#64748b;line-height:1.5}
-label{display:block;margin:18px 0 7px;font-weight:bold}
-input{width:100%;padding:13px;border:1px solid #cbd5e1;border-radius:6px;font-size:15px}
-button{width:100%;margin-top:22px;padding:13px;background:#2563eb;color:white;border:0;border-radius:6px;font-size:15px;cursor:pointer}
-button:disabled{opacity:.6;cursor:not-allowed}
-#message{margin-top:18px;white-space:pre-wrap;line-height:1.5}
-.error{color:#dc2626}
-.success{color:#15803d}
-.back{display:inline-block;margin-top:20px;color:#2563eb;text-decoration:none}
+:root {
+    --bg:#080d1b;
+    --sidebar:#0c1425;
+    --surface:#111c30;
+    --surface2:#16243c;
+    --blue:#5878ff;
+    --cyan:#4bdcff;
+    --white:#f5f7ff;
+    --muted:#93a2bd;
+    --border:rgba(255,255,255,.085);
+    --green:#4ee6a2;
+    --red:#ff7185;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+    min-height:100vh;
+    background:var(--bg);
+    color:var(--white);
+    font-family:'DM Sans',sans-serif;
+    overflow-x:hidden;
+}
+
+button,input { font:inherit; }
+a { color:inherit; text-decoration:none; }
+
+.glow {
+    position:fixed;
+    width:500px;
+    height:500px;
+    border-radius:50%;
+    filter:blur(140px);
+    opacity:.15;
+    pointer-events:none;
+}
+
+.glow-one { background:#315cff; top:-260px; left:-220px; }
+.glow-two { background:#00b9e8; bottom:-300px; right:-220px; }
+
+.layout {
+    display:flex;
+    min-height:100vh;
+}
+
+.sidebar {
+    width:245px;
+    position:fixed;
+    top:0;
+    left:0;
+    bottom:0;
+    z-index:100;
+    display:flex;
+    flex-direction:column;
+    padding:26px 17px;
+    background:var(--sidebar);
+    border-right:1px solid var(--border);
+    transition:transform .3s;
+}
+
+.brand {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:0 9px;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:23px;
+    font-weight:700;
+    letter-spacing:-1px;
+}
+
+.brand-icon {
+    width:37px;
+    height:37px;
+    display:grid;
+    place-items:center;
+    border-radius:11px;
+    background:linear-gradient(135deg,#5878ff,#25c9f5);
+    box-shadow:0 5px 20px rgba(85,119,255,.3);
+}
+
+.brand span:last-child { color:var(--cyan); }
+
+.nav-label {
+    margin:38px 10px 13px;
+    color:#62718d;
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:1.5px;
+}
+
+.nav-list {
+    display:grid;
+    gap:6px;
+}
+
+.nav-item {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:12px 13px;
+    color:var(--muted);
+    border-radius:9px;
+    font-size:12px;
+    font-weight:600;
+    transition:.2s;
+    border:1px solid transparent;
+}
+
+.nav-item:hover {
+    background:rgba(255,255,255,.04);
+    color:white;
+}
+
+.nav-item.active {
+    color:white;
+    background:rgba(85,119,255,.13);
+    border-color:rgba(85,119,255,.18);
+}
+
+.nav-icon {
+    width:20px;
+    text-align:center;
+    font-size:16px;
+}
+
+.sidebar-bottom { margin-top:auto; }
+
+.sidebar-note {
+    padding:15px;
+    background:linear-gradient(145deg,rgba(85,119,255,.13),rgba(75,220,255,.04));
+    border:1px solid rgba(85,119,255,.17);
+    border-radius:12px;
+    margin-bottom:19px;
+}
+
+.sidebar-note strong {
+    font-size:11px;
+    display:block;
+}
+
+.sidebar-note p {
+    font-size:10px;
+    color:var(--muted);
+    line-height:1.7;
+    margin-top:8px;
+}
+
+.account {
+    padding:15px 7px 0;
+    border-top:1px solid var(--border);
+    display:flex;
+    gap:10px;
+    align-items:center;
+}
+
+.avatar {
+    width:36px;
+    height:36px;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(135deg,#5577ff,#25bde8);
+    border-radius:11px;
+    font-size:12px;
+    font-weight:800;
+}
+
+.account-text {
+    min-width:0;
+    flex:1;
+}
+
+.account-text strong {
+    display:block;
+    font-size:10px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.account-text small {
+    display:block;
+    color:var(--muted);
+    font-size:9px;
+    margin-top:4px;
+}
+
+.main {
+    margin-left:245px;
+    width:calc(100% - 245px);
+    min-width:0;
+}
+
+.topbar {
+    height:74px;
+    padding:0 37px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:rgba(8,13,27,.8);
+    backdrop-filter:blur(18px);
+    border-bottom:1px solid var(--border);
+    position:sticky;
+    top:0;
+    z-index:50;
+}
+
+.top-left {
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.menu-btn {
+    display:none;
+    background:none;
+    border:0;
+    color:white;
+    font-size:22px;
+}
+
+.page-context small {
+    color:var(--muted);
+    font-size:9px;
+}
+
+.page-context strong {
+    display:block;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:14px;
+    margin-top:3px;
+}
+
+.top-right {
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.secure-status {
+    display:flex;
+    align-items:center;
+    gap:7px;
+    color:var(--green);
+    font-size:10px;
+    font-weight:700;
+}
+
+.secure-status span {
+    width:6px;
+    height:6px;
+    background:var(--green);
+    border-radius:50%;
+    box-shadow:0 0 9px var(--green);
+}
+
+.logout-btn {
+    border:1px solid var(--border);
+    background:transparent;
+    color:#aebbd2;
+    padding:9px 13px;
+    border-radius:9px;
+    font-size:10px;
+    font-weight:700;
+}
+
+.logout-btn:hover {
+    color:white;
+    border-color:rgba(255,113,133,.4);
+}
+
+.content {
+    max-width:1350px;
+    margin:auto;
+    padding:35px 37px 55px;
+}
+
+.breadcrumb {
+    display:flex;
+    align-items:center;
+    gap:9px;
+    color:#73839f;
+    font-size:10px;
+    margin-bottom:25px;
+}
+
+.breadcrumb a:hover { color:white; }
+.breadcrumb span:last-child { color:var(--cyan); }
+
+.page-heading {
+    margin-bottom:28px;
+}
+
+.page-heading small {
+    color:var(--cyan);
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:1.4px;
+}
+
+.page-heading h1 {
+    font-family:'Space Grotesk',sans-serif;
+    font-size:33px;
+    letter-spacing:-1.5px;
+    margin-top:9px;
+}
+
+.gradient {
+    background:linear-gradient(100deg,#7892ff,#4bdcff);
+    color:transparent;
+    background-clip:text;
+    -webkit-background-clip:text;
+}
+
+.page-heading p {
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.8;
+    margin-top:9px;
+}
+
+.access-layout {
+    display:grid;
+    grid-template-columns:minmax(0,1.15fr) minmax(260px,.85fr);
+    gap:20px;
+    align-items:stretch;
+}
+
+.access-card {
+    padding:29px;
+    background:linear-gradient(145deg,#14233c,#101a2e);
+    border:1px solid rgba(112,145,255,.18);
+    border-radius:16px;
+    box-shadow:0 20px 65px rgba(0,0,0,.16);
+}
+
+.card-top {
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding-bottom:22px;
+    border-bottom:1px solid var(--border);
+    margin-bottom:24px;
+}
+
+.lock-icon {
+    width:47px;
+    height:47px;
+    display:grid;
+    place-items:center;
+    background:rgba(85,119,255,.14);
+    color:#94a8ff;
+    border-radius:13px;
+    font-size:21px;
+}
+
+.card-top h2 {
+    font-family:'Space Grotesk',sans-serif;
+    font-size:18px;
+}
+
+.card-top p {
+    color:var(--muted);
+    font-size:10px;
+    margin-top:5px;
+}
+
+.private-badge {
+    margin-left:auto;
+    color:var(--cyan);
+    background:rgba(75,220,255,.07);
+    border:1px solid rgba(75,220,255,.15);
+    border-radius:20px;
+    padding:7px 10px;
+    font-size:8px;
+    font-weight:800;
+    white-space:nowrap;
+}
+
+.form-group { margin-bottom:20px; }
+
+.form-group label {
+    display:block;
+    color:#dce4f7;
+    font-size:11px;
+    font-weight:700;
+    margin-bottom:9px;
+}
+
+.input-wrap { position:relative; }
+
+.input-wrap input {
+    width:100%;
+    height:52px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:rgba(8,15,29,.65);
+    padding:0 45px 0 43px;
+    color:white;
+    outline:none;
+    font-size:12px;
+    transition:.2s;
+}
+
+.input-wrap input::placeholder { color:#62728e; }
+
+.input-wrap input:focus {
+    border-color:#6382ff;
+    box-shadow:0 0 0 3px rgba(85,119,255,.1);
+    background:#101e36;
+}
+
+.input-icon {
+    position:absolute;
+    left:14px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#8799b8;
+    font-size:15px;
+    pointer-events:none;
+}
+
+.input-action {
+    position:absolute;
+    right:12px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#8ca3ff;
+    background:none;
+    border:0;
+    font-size:9px;
+    font-weight:800;
+    cursor:pointer;
+}
+
+.input-hint {
+    color:#7787a2;
+    font-size:9px;
+    line-height:1.6;
+    margin-top:8px;
+}
+
+.submit-btn {
+    width:100%;
+    height:52px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    background:linear-gradient(110deg,#5577ff,#287eea);
+    color:white;
+    border:0;
+    border-radius:10px;
+    font-size:12px;
+    font-weight:800;
+    box-shadow:0 9px 27px rgba(65,104,255,.22);
+    transition:.2s;
+    margin-top:6px;
+}
+
+.submit-btn:hover {
+    transform:translateY(-2px);
+    box-shadow:0 14px 30px rgba(65,104,255,.35);
+}
+
+.submit-btn:disabled {
+    opacity:.6;
+    cursor:not-allowed;
+    transform:none;
+}
+
+.spinner {
+    width:16px;
+    height:16px;
+    border:2px solid rgba(255,255,255,.35);
+    border-top-color:white;
+    border-radius:50%;
+    animation:spin .7s linear infinite;
+    display:none;
+}
+
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.message {
+    display:none;
+    padding:12px 14px;
+    border-radius:9px;
+    font-size:10px;
+    line-height:1.7;
+    margin-bottom:18px;
+}
+
+.message.error {
+    display:block;
+    color:#ff9aaa;
+    background:rgba(255,113,133,.08);
+    border:1px solid rgba(255,113,133,.18);
+}
+
+.message.success {
+    display:block;
+    color:var(--green);
+    background:rgba(78,230,162,.08);
+    border:1px solid rgba(78,230,162,.18);
+}
+
+.back-link {
+    display:block;
+    text-align:center;
+    color:#91a5ff;
+    font-size:10px;
+    margin-top:21px;
+}
+
+.back-link:hover { color:var(--cyan); }
+
+.info-card {
+    position:relative;
+    overflow:hidden;
+    padding:26px;
+    background:
+        radial-gradient(circle at 100% 0%,rgba(56,125,255,.2),transparent 45%),
+        var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+}
+
+.info-card::after {
+    content:"";
+    position:absolute;
+    width:180px;
+    height:180px;
+    border:1px solid rgba(90,148,255,.13);
+    border-radius:50%;
+    right:-80px;
+    top:-80px;
+    box-shadow:0 0 0 25px rgba(90,148,255,.025),
+               0 0 0 50px rgba(90,148,255,.02);
+}
+
+.info-content { position:relative; z-index:1; }
+
+.info-symbol {
+    width:47px;
+    height:47px;
+    display:grid;
+    place-items:center;
+    background:rgba(75,220,255,.09);
+    color:var(--cyan);
+    border-radius:13px;
+    font-size:21px;
+    margin-bottom:23px;
+}
+
+.info-card h3 {
+    font-family:'Space Grotesk',sans-serif;
+    font-size:19px;
+    line-height:1.4;
+}
+
+.info-card > .info-content > p {
+    color:var(--muted);
+    font-size:11px;
+    line-height:1.8;
+    margin-top:11px;
+}
+
+.info-steps {
+    display:grid;
+    gap:18px;
+    margin-top:29px;
+}
+
+.info-step {
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+}
+
+.step-number {
+    width:25px;
+    height:25px;
+    display:grid;
+    place-items:center;
+    border-radius:8px;
+    color:var(--cyan);
+    background:rgba(75,220,255,.09);
+    font-size:10px;
+    font-weight:800;
+    flex-shrink:0;
+}
+
+.info-step strong {
+    display:block;
+    font-size:10px;
+}
+
+.info-step p {
+    color:var(--muted);
+    font-size:9px;
+    line-height:1.7;
+    margin-top:4px;
+}
+
+.security-footer {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#7788a4;
+    font-size:9px;
+    padding-top:22px;
+    margin-top:24px;
+    border-top:1px solid var(--border);
+}
+
+.security-footer span { color:var(--green); }
+
+.footer {
+    display:flex;
+    justify-content:space-between;
+    gap:15px;
+    border-top:1px solid var(--border);
+    margin-top:37px;
+    padding-top:22px;
+    color:#667590;
+    font-size:9px;
+}
+
+.footer a { color:#91a5ff; }
+
+.overlay {
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.65);
+    z-index:90;
+}
+
+.overlay.show { display:block; }
+
+@media(max-width:1000px) {
+    .access-layout {
+        grid-template-columns:1fr;
+    }
+    .info-card { min-height:unset; }
+    .info-steps { grid-template-columns:repeat(3,1fr); }
+}
+
+@media(max-width:900px) {
+    .sidebar { transform:translateX(-100%); }
+    .sidebar.open { transform:translateX(0); }
+    .main { margin-left:0; width:100%; }
+    .menu-btn { display:block; }
+    .topbar { padding:0 22px; }
+    .content { padding:30px 22px 45px; }
+}
+
+@media(max-width:600px) {
+    .topbar { height:66px; padding:0 15px; }
+    .content { padding:24px 15px 35px; }
+    .page-heading h1 { font-size:27px; }
+    .access-card { padding:20px; }
+    .card-top { flex-wrap:wrap; }
+    .private-badge { margin-left:0; }
+    .info-card { padding:21px; }
+    .info-steps { grid-template-columns:1fr; }
+    .secure-status { display:none; }
+    .footer { flex-direction:column; }
+}
 </style>
 </head>
 
 <body>
 
-<header>
-<strong>CloudQuiz</strong>
-<a href="dashboard.html">Back to Dashboard</a>
+<div class="glow glow-one"></div>
+<div class="glow glow-two"></div>
+
+<div class="layout">
+
+<aside class="sidebar" id="sidebar">
+
+    <a href="index.html" class="brand">
+        <span class="brand-icon">☁</span>
+        Cloud<span>Quiz</span>
+    </a>
+
+    <div class="nav-label">WORKSPACE</div>
+
+    <nav class="nav-list">
+        <a href="dashboard.html" class="nav-item">
+            <span class="nav-icon">⌂</span> Dashboard
+        </a>
+
+        <a href="dashboard.html#availableTests" class="nav-item">
+            <span class="nav-icon">▤</span> Explore tests
+        </a>
+
+        <a href="enter-test.html" class="nav-item active">
+            <span class="nav-icon">♢</span> Private test
+        </a>
+
+        <a href="builder.html" class="nav-item">
+            <span class="nav-icon">✚</span> Test Builder
+        </a>
+    </nav>
+
+    <div class="nav-label">ACCOUNT</div>
+
+    <nav class="nav-list">
+        <a href="admin.html" class="nav-item">
+            <span class="nav-icon">◈</span> Platform overview
+        </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+
+        <div class="sidebar-note">
+            <strong>Private examinations</strong>
+            <p>Private tests require a valid test ID and access key supplied by the test creator.</p>
+        </div>
+
+        <div class="account">
+            <div class="avatar" id="avatar">CQ</div>
+            <div class="account-text">
+                <strong id="accountEmail">Student account</strong>
+                <small>Authenticated user</small>
+            </div>
+        </div>
+
+    </div>
+</aside>
+
+<div class="overlay" id="overlay"></div>
+
+<main class="main">
+
+<header class="topbar">
+    <div class="top-left">
+        <button class="menu-btn" id="menuBtn" aria-label="Open navigation">☰</button>
+
+        <div class="page-context">
+            <small>WORKSPACE / EXAMINATIONS</small>
+            <strong>Private Test Access</strong>
+        </div>
+    </div>
+
+    <div class="top-right">
+        <div class="secure-status">
+            <span></span> Secure session
+        </div>
+
+        <button class="logout-btn" id="logoutBtn">↗ Logout</button>
+    </div>
 </header>
 
-<main>
-<div class="card">
-<h2>Join a Private Test</h2>
-<p>Enter the test ID and unique access key provided by your test creator.</p>
+<div class="content">
 
-<form id="accessForm">
-<label for="quizId">Test ID</label>
-<input id="quizId" type="text" placeholder="Enter test ID" required autocomplete="off">
+    <div class="breadcrumb">
+        <a href="dashboard.html">Dashboard</a>
+        <span>/</span>
+        <span>Private test access</span>
+    </div>
 
-<label for="accessKey">Access Key</label>
-<input id="accessKey" type="text" placeholder="Enter access key" required autocomplete="off">
+    <section class="page-heading">
+        <small>CONTROLLED EXAMINATION ACCESS</small>
+        <h1>Enter your <span class="gradient">private test.</span></h1>
+        <p>
+            Have a private examination invitation? Enter its unique test ID
+            and access key to unlock your assessment.
+        </p>
+    </section>
 
-<button id="submitBtn" type="submit">Verify and Start Test</button>
-</form>
+    <section class="access-layout">
 
-<div id="message" role="status"></div>
-<a class="back" href="dashboard.html">← Return to Dashboard</a>
+        <div class="access-card">
+
+            <div class="card-top">
+                <div class="lock-icon">♢</div>
+
+                <div>
+                    <h2>Access your examination</h2>
+                    <p>Enter the credentials provided by your test creator.</p>
+                </div>
+
+                <span class="private-badge">PRIVATE ACCESS</span>
+            </div>
+
+            <div id="message" class="message" role="alert" aria-live="polite"></div>
+
+            <form id="accessForm">
+
+                <div class="form-group">
+                    <label for="quizId">Test ID</label>
+
+                    <div class="input-wrap">
+                        <span class="input-icon">⌗</span>
+
+                        <input
+                            type="text"
+                            id="quizId"
+                            placeholder="Enter your examination ID"
+                            autocomplete="off"
+                            maxlength="128"
+                            required
+                        >
+                    </div>
+
+                    <p class="input-hint">
+                        The unique test identifier shared by the creator.
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label for="accessKey">Private access key</label>
+
+                    <div class="input-wrap">
+                        <span class="input-icon">♙</span>
+
+                        <input
+                            type="password"
+                            id="accessKey"
+                            placeholder="Enter your private access key"
+                            autocomplete="off"
+                            maxlength="256"
+                            required
+                        >
+
+                        <button
+                            type="button"
+                            class="input-action"
+                            id="toggleKey"
+                        >SHOW</button>
+                    </div>
+
+                    <p class="input-hint">
+                        Access keys are case-sensitive. Enter the key exactly as provided.
+                    </p>
+                </div>
+
+                <button type="submit" class="submit-btn" id="submitButton">
+                    <span id="buttonText">Verify access and continue →</span>
+                    <span class="spinner" id="spinner"></span>
+                </button>
+
+            </form>
+
+            <a href="dashboard.html" class="back-link">
+                ← Return to student dashboard
+            </a>
+
+        </div>
+
+        <aside class="info-card">
+            <div class="info-content">
+
+                <div class="info-symbol">♢</div>
+
+                <h3>Your examination.<br><span class="gradient">Your access.</span></h3>
+
+                <p>
+                    Private examinations are accessible only to users who
+                    have been given the correct test ID and access key.
+                </p>
+
+                <div class="info-steps">
+
+                    <div class="info-step">
+                        <span class="step-number">01</span>
+                        <div>
+                            <strong>Get your test ID</strong>
+                            <p>Ask the test creator for the unique examination ID.</p>
+                        </div>
+                    </div>
+
+                    <div class="info-step">
+                        <span class="step-number">02</span>
+                        <div>
+                            <strong>Enter your access key</strong>
+                            <p>Use the private key shared with you.</p>
+                        </div>
+                    </div>
+
+                    <div class="info-step">
+                        <span class="step-number">03</span>
+                        <div>
+                            <strong>Start your examination</strong>
+                            <p>Once verified, your private assessment will open.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="security-footer">
+                    <span>◈</span>
+                    Access verification is handled securely by CloudQuiz.
+                </div>
+
+            </div>
+        </aside>
+
+    </section>
+
+    <footer class="footer">
+        <span>© 2026 CloudQuiz · Private examination portal</span>
+        <span>Powered by <a href="index.html">CloudQuiz</a></span>
+    </footer>
+
 </div>
 </main>
+</div>
 
 <script>
-const API_URL = "https://6sjt9v5t1a.execute-api.ap-southeast-2.amazonaws.com/prod";
-
-const token = sessionStorage.getItem("cq_id_token");
-const expiry = Number(sessionStorage.getItem("cq_token_expiry") || 0);
-
-if (!token || Date.now() >= expiry) {
-    sessionStorage.clear();
-    window.location.replace("login.html");
-}
+/* CloudQuiz API configuration */
+const API_BASE =
+    "https://6sjt9v5t1a.execute-api.ap-southeast-2.amazonaws.com/prod";
 
 const form = document.getElementById("accessForm");
-const button = document.getElementById("submitBtn");
-const message = document.getElementById("message");
+const quizIdInput = document.getElementById("quizId");
+const accessKeyInput = document.getElementById("accessKey");
+const messageBox = document.getElementById("message");
 
-form.addEventListener("submit", async function(event) {
+const submitButton = document.getElementById("submitButton");
+const buttonText = document.getElementById("buttonText");
+const spinner = document.getElementById("spinner");
+
+function getToken() {
+    return sessionStorage.getItem("cq_id_token");
+}
+
+function isSessionValid() {
+    const token = getToken();
+    const expiry = Number(sessionStorage.getItem("cq_token_expiry") || 0);
+
+    return Boolean(token && expiry && Date.now() < expiry);
+}
+
+function logout() {
+    [
+        "cq_id_token",
+        "cq_access_token",
+        "cq_refresh_token",
+        "cq_token_expiry",
+        "cq_user_email",
+        "cq_current_quiz",
+        "cq_private_test",
+        "cq_private_access_key",
+        "cq_last_result"
+    ].forEach(key => sessionStorage.removeItem(key));
+
+    window.location.href = "login.html";
+}
+
+function showMessage(message, type = "error") {
+    messageBox.textContent = message;
+    messageBox.className = `message ${type}`;
+}
+
+function setLoading(loading) {
+    submitButton.disabled = loading;
+    spinner.style.display = loading ? "inline-block" : "none";
+
+    buttonText.textContent = loading
+        ? "Verifying examination access..."
+        : "Verify access and continue →";
+}
+
+function getInitials(email) {
+    if (!email) return "CQ";
+
+    return email.split("@")[0].slice(0, 2).toUpperCase();
+}
+
+function friendlyError(status, data) {
+    const error = data?.error || data?.message || "";
+
+    if (status === 401) {
+        return "Your session has expired. Please sign in again.";
+    }
+
+    if (status === 403) {
+        return error || "You don't have permission to access this examination.";
+    }
+
+    if (status === 404) {
+        return error || "The test ID or access key is incorrect, or the test is unavailable.";
+    }
+
+    if (status === 400) {
+        return error || "Please check your test ID and access key.";
+    }
+
+    return error || "Unable to verify examination access. Please try again.";
+}
+
+// Require authenticated CloudQuiz session.
+if (!isSessionValid()) {
+    logout();
+} else {
+    const email = sessionStorage.getItem("cq_user_email") || "";
+
+    document.getElementById("accountEmail").textContent =
+        email || "Student account";
+
+    document.getElementById("avatar").textContent =
+        getInitials(email);
+}
+
+// Show/hide access key.
+document.getElementById("toggleKey").addEventListener("click", () => {
+    const show = accessKeyInput.type === "password";
+
+    accessKeyInput.type = show ? "text" : "password";
+
+    document.getElementById("toggleKey").textContent =
+        show ? "HIDE" : "SHOW";
+});
+
+// Submit private test access request.
+form.addEventListener("submit", async event => {
     event.preventDefault();
 
-    const quizId = document.getElementById("quizId").value.trim();
-    const accessKey = document.getElementById("accessKey").value.trim();
+    messageBox.className = "message";
+
+    const quizId = quizIdInput.value.trim();
+    const accessKey = accessKeyInput.value.trim();
 
     if (!quizId || !accessKey) {
-        message.className = "error";
-        message.textContent = "Please enter both the test ID and access key.";
+        showMessage("Please enter both your test ID and private access key.");
         return;
     }
 
-    button.disabled = true;
-    button.textContent = "Verifying...";
-    message.className = "";
-    message.textContent = "Checking your test access...";
+    if (!isSessionValid()) {
+        showMessage("Your session has expired. Please sign in again.");
+        setTimeout(logout, 1200);
+        return;
+    }
+
+    setLoading(true);
 
     try {
-        const response = await fetch(`${API_URL}/tests/access`, {
+        const response = await fetch(`${API_BASE}/tests/access`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
+                "Authorization": `Bearer ${getToken()}`
             },
             body: JSON.stringify({
-                quizId: quizId,
-                accessKey: accessKey
+                quizId,
+                accessKey
             })
         });
 
-        const data = await response.json();
+        const data = await response.json().catch(() => ({}));
 
-        if (!response.ok || !data.success || !data.test) {
-            throw new Error(data.message || "Unable to access this test.");
+        if (!response.ok) {
+            throw new Error(
+                friendlyError(response.status, data)
+            );
         }
 
-        if (!data.test.questions || data.test.questions.length === 0) {
-            throw new Error("This test does not contain any questions.");
-        }
+        /*
+         * Preserve the session keys used by the existing quiz.html.
+         * The backend response contains safe questions without answers.
+         */
+        sessionStorage.setItem(
+            "cq_current_quiz",
+            JSON.stringify(data)
+        );
 
-        sessionStorage.setItem("cq_current_quiz", quizId);
-        sessionStorage.setItem("cq_private_test", JSON.stringify(data.test));
-        sessionStorage.setItem("cq_private_access_key", accessKey);
+        sessionStorage.setItem("cq_private_test", "true");
 
-        message.className = "success";
-        message.textContent = "Access verified! Opening your test...";
+        sessionStorage.setItem(
+            "cq_private_access_key",
+            accessKey
+        );
 
-        window.location.href = "quiz.html";
+        showMessage(
+            "Private examination verified successfully. Opening your test...",
+            "success"
+        );
+
+        setTimeout(() => {
+            window.location.href =
+                `quiz.html?id=${encodeURIComponent(quizId)}`;
+        }, 650);
 
     } catch (error) {
-        message.className = "error";
-        message.textContent = error.message;
-        button.disabled = false;
-        button.textContent = "Verify and Start Test";
+        console.error("CloudQuiz private access error:", error);
+
+        showMessage(
+            error.message || "Unable to verify access. Please try again."
+        );
+
+        setLoading(false);
     }
 });
+
+// Mobile sidebar.
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("overlay");
+
+document.getElementById("menuBtn").addEventListener("click", () => {
+    sidebar.classList.toggle("open");
+    overlay.classList.toggle("show");
+});
+
+overlay.addEventListener("click", () => {
+    sidebar.classList.remove("open");
+    overlay.classList.remove("show");
+});
+
+document.getElementById("logoutBtn").addEventListener("click", logout);
 </script>
 
 </body>

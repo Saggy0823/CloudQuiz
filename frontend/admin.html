@@ -3,138 +3,559 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080d1b">
 <title>CloudQuiz | Admin Overview</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
+:root{
+  --bg:#080d1b;
+  --surface:#10182b;
+  --surface2:#141f35;
+  --border:rgba(148,163,184,.13);
+  --text:#f1f5ff;
+  --muted:#8290aa;
+  --blue:#5878ff;
+  --cyan:#4bdcff;
+  --green:#38d9a9;
+  --red:#ff6b81;
+  --orange:#ffb86b;
+}
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f3f6fb;color:#172033}
-header{background:#172554;color:white;padding:20px 7%;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
-header h2{margin:0}
-header a{color:white;text-decoration:none;margin-left:18px}
-main{max-width:1050px;margin:45px auto;padding:0 20px}
-h1{margin-bottom:8px}
-.muted{color:#64748b}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin:30px 0}
-.card{background:white;padding:25px;border-radius:14px;box-shadow:0 5px 20px #17255412}
-.card h3{margin:0 0 12px;color:#64748b;font-size:15px}
-.value{font-size:30px;font-weight:bold}
-.status{font-size:15px;margin-top:12px}
-.panel{background:white;padding:25px;border-radius:14px;box-shadow:0 5px 20px #17255412;margin-top:20px}
-button{background:#2563eb;color:white;border:0;border-radius:8px;padding:11px 17px;cursor:pointer}
-button:hover{background:#1d4ed8}
-#quizList{padding-left:20px;line-height:2}
-.note{background:#fff7ed;border-left:4px solid #f97316;padding:15px;border-radius:6px;margin-top:25px;color:#7c2d12}
-footer{text-align:center;color:#64748b;padding:35px}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:'DM Sans',sans-serif;
+  background:
+    radial-gradient(ellipse at 12% 0%,rgba(88,120,255,.13),transparent 32%),
+    radial-gradient(ellipse at 90% 15%,rgba(75,220,255,.07),transparent 27%),
+    var(--bg);
+  color:var(--text);
+}
+a{color:inherit;text-decoration:none}
+button{font:inherit}
+.topbar{
+  height:76px;
+  padding:0 6%;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  border-bottom:1px solid var(--border);
+  background:rgba(8,13,27,.78);
+  backdrop-filter:blur(18px);
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-icon{
+  width:39px;height:39px;border-radius:12px;
+  display:grid;place-items:center;
+  background:linear-gradient(135deg,#5878ff,#39c8e9);
+  box-shadow:0 5px 22px rgba(88,120,255,.3);
+  font-size:20px;
+}
+.brand-name{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:20px;font-weight:700;letter-spacing:-.7px;
+}
+.brand-name span{color:var(--cyan)}
+.nav{display:flex;align-items:center;gap:25px}
+.nav a{font-size:13px;color:var(--muted);transition:.2s}
+.nav a:hover,.nav a.active{color:white}
+.nav a.active{font-weight:700}
+.nav-divider{height:23px;width:1px;background:var(--border)}
+.admin-tag{
+  border:1px solid rgba(88,120,255,.28);
+  background:rgba(88,120,255,.1);
+  color:#a9baff;
+  padding:7px 11px;
+  border-radius:8px;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.7px;
+}
+main{max-width:1160px;margin:0 auto;padding:48px 26px 80px}
+.breadcrumb{
+  display:flex;align-items:center;gap:9px;
+  color:var(--muted);font-size:12px;margin-bottom:27px;
+}
+.breadcrumb span:last-child{color:#cbd5e1}
+.heading-row{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  gap:22px;flex-wrap:wrap;
+}
+.eyebrow{
+  display:flex;align-items:center;gap:9px;
+  color:var(--cyan);font-size:11px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1.8px;margin-bottom:13px;
+}
+.eyebrow:before{
+  content:"";width:22px;height:2px;
+  background:var(--cyan);border-radius:5px;
+}
+h1{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:clamp(30px,4vw,43px);
+  letter-spacing:-1.8px;margin:0;
+}
+.subtitle{color:var(--muted);font-size:14px;margin:11px 0 0;line-height:1.7}
+.header-actions{display:flex;align-items:center;gap:12px}
+.refresh-btn{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  background:linear-gradient(135deg,#5878ff,#4666e8);
+  color:white;border:0;border-radius:11px;padding:12px 17px;
+  font-size:13px;font-weight:700;cursor:pointer;
+  box-shadow:0 7px 22px rgba(88,120,255,.2);
+  transition:.2s;
+}
+.refresh-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(88,120,255,.3)}
+.refresh-btn:disabled{opacity:.6;cursor:wait;transform:none}
+.refresh-icon{font-size:16px;display:inline-block}
+.refresh-btn.loading .refresh-icon{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.updated{
+  color:var(--muted);font-size:11px;margin-top:13px;text-align:right;
+}
+.section-label{
+  display:flex;align-items:center;gap:12px;
+  font-family:'Space Grotesk',sans-serif;
+  font-size:16px;font-weight:600;margin:43px 0 17px;
+}
+.section-label:after{content:"";height:1px;flex:1;background:var(--border)}
+.stats-grid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:17px;
+}
+.stat-card{
+  position:relative;overflow:hidden;
+  background:linear-gradient(145deg,rgba(20,31,53,.96),rgba(14,23,41,.96));
+  border:1px solid var(--border);
+  border-radius:17px;padding:23px;
+  min-height:173px;
+  transition:transform .25s,border-color .25s;
+}
+.stat-card:hover{transform:translateY(-4px);border-color:rgba(88,120,255,.35)}
+.stat-card:after{
+  content:"";position:absolute;width:135px;height:135px;
+  border-radius:50%;right:-55px;top:-65px;
+  background:rgba(88,120,255,.09);filter:blur(2px);
+}
+.stat-top{display:flex;justify-content:space-between;align-items:center}
+.stat-name{font-size:12px;color:var(--muted);font-weight:600}
+.stat-icon{
+  width:37px;height:37px;border-radius:11px;
+  display:grid;place-items:center;font-size:17px;
+  background:rgba(88,120,255,.13);color:#91a6ff;
+}
+.stat-value{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:31px;font-weight:700;letter-spacing:-1px;
+  margin-top:22px;
+}
+.stat-caption{font-size:11px;color:var(--muted);margin-top:5px}
+.status-inline{display:flex;align-items:center;gap:8px}
+.status-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--orange);display:inline-block;
+  box-shadow:0 0 12px currentColor;
+}
+.status-dot.online{background:var(--green);color:var(--green)}
+.status-dot.offline{background:var(--red);color:var(--red)}
+.status-dot.checking{background:var(--orange);color:var(--orange)}
+.api-card .stat-value{font-size:27px}
+.api-card.online .stat-icon{background:rgba(56,217,169,.12);color:var(--green)}
+.api-card.offline .stat-icon{background:rgba(255,107,129,.12);color:var(--red)}
+.app-card .stat-icon{background:rgba(75,220,255,.1);color:var(--cyan)}
+.content-panel{
+  background:linear-gradient(145deg,rgba(16,24,43,.97),rgba(13,21,38,.97));
+  border:1px solid var(--border);border-radius:18px;
+  overflow:hidden;
+}
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:15px;flex-wrap:wrap;padding:23px 25px;
+  border-bottom:1px solid var(--border);
+}
+.panel-title{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600}
+.panel-subtitle{font-size:11px;color:var(--muted);margin-top:5px}
+.count-pill{
+  font-size:11px;font-weight:700;color:#a9baff;
+  background:rgba(88,120,255,.12);
+  border:1px solid rgba(88,120,255,.2);
+  padding:7px 11px;border-radius:8px;
+}
+.quiz-list{padding:5px 25px 12px}
+.quiz-row{
+  display:flex;align-items:center;gap:15px;
+  padding:17px 0;border-bottom:1px solid rgba(148,163,184,.09);
+  animation:fadeUp .35s ease both;
+}
+.quiz-row:last-child{border-bottom:0}
+.quiz-symbol{
+  flex:0 0 42px;width:42px;height:42px;
+  display:grid;place-items:center;border-radius:12px;
+  background:rgba(88,120,255,.11);
+  color:#9bb0ff;font-size:17px;
+}
+.quiz-info{min-width:0;flex:1}
+.quiz-title{
+  font-size:13px;font-weight:700;
+  overflow-wrap:anywhere;line-height:1.5;
+}
+.quiz-meta{font-size:11px;color:var(--muted);margin-top:5px}
+.quiz-badge{
+  color:var(--green);background:rgba(56,217,169,.09);
+  border:1px solid rgba(56,217,169,.16);
+  padding:6px 9px;border-radius:7px;font-size:10px;font-weight:700;
+}
+.empty-state,.error-state{
+  text-align:center;padding:49px 20px;color:var(--muted);
+}
+.empty-icon{font-size:30px;margin-bottom:12px}
+.empty-title{color:#dbe5f8;font-size:14px;font-weight:700;margin-bottom:7px}
+.empty-copy{font-size:12px;line-height:1.7}
+.error-state .empty-icon{color:var(--red)}
+.skeleton{
+  height:62px;border-bottom:1px solid var(--border);
+  background:linear-gradient(90deg,transparent,rgba(148,163,184,.07),transparent);
+  background-size:200% 100%;animation:shimmer 1.3s infinite;
+}
+@keyframes shimmer{to{background-position:-200% 0}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.notice{
+  margin-top:23px;padding:19px 21px;
+  display:flex;gap:14px;align-items:flex-start;
+  background:rgba(255,184,107,.055);
+  border:1px solid rgba(255,184,107,.18);
+  border-radius:13px;
+}
+.notice-icon{
+  flex:0 0 33px;width:33px;height:33px;border-radius:9px;
+  display:grid;place-items:center;
+  color:var(--orange);background:rgba(255,184,107,.1);
+}
+.notice-title{font-size:12px;font-weight:700;color:#ffd09c;margin-bottom:6px}
+.notice-text{font-size:11px;line-height:1.8;color:#b3a18d}
+.footer{
+  border-top:1px solid var(--border);
+  text-align:center;padding:25px 20px;
+  color:#64718b;font-size:11px;
+}
+.footer span{color:#91a6ff}
+@media(max-width:760px){
+  .topbar{padding:0 20px;height:68px}
+  .nav{gap:14px}
+  .nav a{font-size:11px}
+  .admin-tag{display:none}
+  main{padding:35px 18px 60px}
+  .stats-grid{grid-template-columns:1fr}
+  .stat-card{min-height:145px}
+  .stat-value{margin-top:15px}
+  .updated{text-align:left}
+}
+@media(max-width:440px){
+  .brand-name{font-size:18px}
+  .nav{gap:10px}
+  .nav-divider{display:none}
+  .nav a{font-size:10px}
+  .header-actions{width:100%}
+  .refresh-btn{width:100%}
+  .quiz-badge{display:none}
+  .panel-head{padding:19px}
+  .quiz-list{padding-left:19px;padding-right:19px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
 </style>
 </head>
+
 <body>
-<header>
-  <h2>☁ CloudQuiz Admin</h2>
-  <nav>
+
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <div class="brand-icon">☁</div>
+    <div class="brand-name">Cloud<span>Quiz</span></div>
+  </a>
+
+  <nav class="nav">
     <a href="dashboard.html">Dashboard</a>
     <a href="index.html">Home</a>
+    <span class="nav-divider"></span>
+    <span class="admin-tag">ADMIN OVERVIEW</span>
   </nav>
 </header>
 
 <main>
-  <h1>System Overview</h1>
-  <p class="muted">Monitor the CloudQuiz backend and published quizzes.</p>
-
-  <section class="cards">
-    <div class="card">
-      <h3>Backend API</h3>
-      <div class="value" id="apiStatus">Checking...</div>
-      <div class="status muted" id="apiMessage">Connecting to backend</div>
-    </div>
-    <div class="card">
-      <h3>Available Quizzes</h3>
-      <div class="value" id="quizCount">--</div>
-      <div class="status muted">Published quizzes</div>
-    </div>
-    <div class="card">
-      <h3>Application</h3>
-      <div class="value">CloudQuiz</div>
-      <div class="status muted">Online examination system</div>
-    </div>
-  </section>
-
-  <section class="panel">
-    <h2>Published Quizzes</h2>
-    <p class="muted">Quizzes currently returned by the backend API.</p>
-    <ul id="quizList"><li>Loading quizzes...</li></ul>
-    <button id="refreshBtn" type="button">Refresh Overview</button>
-  </section>
-
-  <div class="note">
-    <strong>Admin functionality status:</strong>
-    This page currently provides read-only monitoring. Creating, editing,
-    deleting quizzes, and viewing all student results require secured admin
-    backend endpoints and role-based authorization, which are not configured yet.
+  <div class="breadcrumb">
+    <span>CloudQuiz</span><span>/</span><span>Administration</span><span>/</span><span>Overview</span>
   </div>
+
+  <section class="heading-row">
+    <div>
+      <div class="eyebrow">System monitoring</div>
+      <h1>Admin Overview<span style="color:var(--blue)">.</span></h1>
+      <p class="subtitle">A live overview of your CloudQuiz application and published examinations.</p>
+    </div>
+
+    <div class="header-actions">
+      <button class="refresh-btn" id="refreshBtn" type="button">
+        <span class="refresh-icon">↻</span>
+        <span>Refresh overview</span>
+      </button>
+    </div>
+  </section>
+
+  <div class="updated" id="lastUpdated">Last checked: Not yet updated</div>
+
+  <div class="section-label">System metrics</div>
+
+  <section class="stats-grid">
+    <article class="stat-card api-card" id="apiCard">
+      <div class="stat-top">
+        <div class="stat-name">Backend API</div>
+        <div class="stat-icon">⌁</div>
+      </div>
+      <div class="stat-value status-inline">
+        <span class="status-dot checking" id="apiDot"></span>
+        <span id="apiStatus">Checking...</span>
+      </div>
+      <div class="stat-caption" id="apiMessage">Connecting to backend services</div>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-top">
+        <div class="stat-name">Published quizzes</div>
+        <div class="stat-icon">▤</div>
+      </div>
+      <div class="stat-value" id="quizCount">--</div>
+      <div class="stat-caption">Quizzes returned by the public API</div>
+    </article>
+
+    <article class="stat-card app-card">
+      <div class="stat-top">
+        <div class="stat-name">Application</div>
+        <div class="stat-icon">✦</div>
+      </div>
+      <div class="stat-value">CloudQuiz</div>
+      <div class="stat-caption">Cloud-native online examination system</div>
+    </article>
+  </section>
+
+  <div class="section-label">Examination management</div>
+
+  <section class="content-panel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Published examinations</div>
+        <div class="panel-subtitle">Examinations currently available through the backend API</div>
+      </div>
+      <div class="count-pill" id="quizCountLabel">0 QUIZZES</div>
+    </div>
+
+    <div class="quiz-list" id="quizList">
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+    </div>
+  </section>
+
+  <section class="notice">
+    <div class="notice-icon">ⓘ</div>
+    <div>
+      <div class="notice-title">Read-only administration</div>
+      <div class="notice-text">
+        This dashboard currently provides system monitoring and published quiz visibility.
+        Creating, editing, deleting quizzes, viewing all student results, and managing users
+        require dedicated admin API endpoints and server-side role-based authorization.
+        These capabilities are not configured in the current backend.
+      </div>
+    </div>
+  </section>
 </main>
 
-<footer>CloudQuiz — Cloud-Native Online Examination System</footer>
+<footer class="footer">
+  <span>CloudQuiz</span> — Cloud-Native Online Examination System
+</footer>
 
 <script>
 const API_URL = "https://6sjt9v5t1a.execute-api.ap-southeast-2.amazonaws.com/prod";
 
-async function loadOverview() {
-  const apiStatus = document.getElementById("apiStatus");
-  const apiMessage = document.getElementById("apiMessage");
-  const quizCount = document.getElementById("quizCount");
-  const quizList = document.getElementById("quizList");
+const elements = {
+  apiStatus: document.getElementById("apiStatus"),
+  apiMessage: document.getElementById("apiMessage"),
+  apiDot: document.getElementById("apiDot"),
+  apiCard: document.getElementById("apiCard"),
+  quizCount: document.getElementById("quizCount"),
+  quizCountLabel: document.getElementById("quizCountLabel"),
+  quizList: document.getElementById("quizList"),
+  refreshBtn: document.getElementById("refreshBtn"),
+  lastUpdated: document.getElementById("lastUpdated")
+};
 
-  apiStatus.textContent = "Checking...";
-  apiMessage.textContent = "Connecting to backend";
-  quizCount.textContent = "--";
-  quizList.innerHTML = "<li>Loading quizzes...</li>";
+function setApiStatus(status, message) {
+  elements.apiStatus.textContent = status;
+  elements.apiMessage.textContent = message;
 
-  try {
-    const [healthResponse, quizResponse] = await Promise.all([
-      fetch(API_URL + "/health"),
-      fetch(API_URL + "/quizzes")
-    ]);
+  elements.apiDot.className = "status-dot";
+  elements.apiCard.classList.remove("online", "offline");
 
-    if (healthResponse.ok) {
-      apiStatus.textContent = "Online";
-      apiMessage.textContent = "Backend health check successful";
-    } else {
-      apiStatus.textContent = "Error";
-      apiMessage.textContent = "Health check returned HTTP " + healthResponse.status;
-    }
-
-    if (!quizResponse.ok) {
-      throw new Error("Quiz API returned HTTP " + quizResponse.status);
-    }
-
-    const data = await quizResponse.json();
-    const quizzes = Array.isArray(data) ? data : (data.quizzes || []);
-
-    quizCount.textContent = quizzes.length;
-    quizList.innerHTML = "";
-
-    if (quizzes.length === 0) {
-      quizList.innerHTML = "<li>No quizzes are currently available.</li>";
-      return;
-    }
-
-    quizzes.forEach(quiz => {
-      const item = document.createElement("li");
-      item.textContent = (quiz.title || "Untitled Quiz") +
-        " — " + (quiz.questions ? quiz.questions.length : (quiz.questionCount || 0)) +
-        " questions";
-      quizList.appendChild(item);
-    });
-
-  } catch (error) {
-    apiStatus.textContent = "Unavailable";
-    apiMessage.textContent = error.message;
-    quizCount.textContent = "--";
-    quizList.innerHTML = "<li>Unable to load quizzes. Check the backend API.</li>";
+  if (status === "Online") {
+    elements.apiDot.classList.add("online");
+    elements.apiCard.classList.add("online");
+  } else if (status === "Offline" || status === "Unavailable") {
+    elements.apiDot.classList.add("offline");
+    elements.apiCard.classList.add("offline");
+  } else {
+    elements.apiDot.classList.add("checking");
   }
 }
 
-document.getElementById("refreshBtn").addEventListener("click", loadOverview);
+function showLoading() {
+  elements.quizList.innerHTML = `
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+  `;
+}
+
+function showEmpty(message) {
+  elements.quizList.innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">▤</div>
+      <div class="empty-title">No published quizzes</div>
+      <div class="empty-copy">${message}</div>
+    </div>
+  `;
+}
+
+function showError(message) {
+  elements.quizList.innerHTML = `
+    <div class="error-state">
+      <div class="empty-icon">⚠</div>
+      <div class="empty-title">Unable to load examinations</div>
+      <div class="empty-copy">${message}</div>
+    </div>
+  `;
+}
+
+function renderQuizzes(quizzes) {
+  elements.quizCount.textContent = quizzes.length;
+  elements.quizCountLabel.textContent = `${quizzes.length} ${quizzes.length === 1 ? "QUIZ" : "QUIZZES"}`;
+
+  if (!quizzes.length) {
+    showEmpty("There are currently no published quizzes available from the backend.");
+    return;
+  }
+
+  elements.quizList.innerHTML = "";
+
+  quizzes.forEach((quiz, index) => {
+    const item = document.createElement("article");
+    item.className = "quiz-row";
+    item.style.animationDelay = `${Math.min(index * 45, 400)}ms`;
+
+    const symbol = document.createElement("div");
+    symbol.className = "quiz-symbol";
+    symbol.textContent = "▤";
+
+    const info = document.createElement("div");
+    info.className = "quiz-info";
+
+    const title = document.createElement("div");
+    title.className = "quiz-title";
+    title.textContent = quiz.title || "Untitled Quiz";
+
+    const questionCount = Array.isArray(quiz.questions)
+      ? quiz.questions.length
+      : (Number(quiz.questionCount) || 0);
+
+    const meta = document.createElement("div");
+    meta.className = "quiz-meta";
+    meta.textContent = `${questionCount} ${questionCount === 1 ? "question" : "questions"}`;
+
+    const badge = document.createElement("span");
+    badge.className = "quiz-badge";
+    badge.textContent = "PUBLISHED";
+
+    info.appendChild(title);
+    info.appendChild(meta);
+
+    item.appendChild(symbol);
+    item.appendChild(info);
+    item.appendChild(badge);
+
+    elements.quizList.appendChild(item);
+  });
+}
+
+async function loadOverview() {
+  elements.refreshBtn.disabled = true;
+  elements.refreshBtn.classList.add("loading");
+  elements.quizCount.textContent = "--";
+  elements.quizCountLabel.textContent = "LOADING";
+  showLoading();
+  setApiStatus("Checking...", "Connecting to backend services");
+
+  const healthPromise = fetch(`${API_URL}/health`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Health check returned HTTP ${response.status}`);
+      }
+      return response.json().catch(() => ({}));
+    });
+
+  const quizzesPromise = fetch(`${API_URL}/quizzes`)
+    .then(async response => {
+      if (!response.ok) {
+        throw new Error(`Quiz API returned HTTP ${response.status}`);
+      }
+      return response.json();
+    });
+
+  const [healthResult, quizzesResult] = await Promise.allSettled([
+    healthPromise,
+    quizzesPromise
+  ]);
+
+  if (healthResult.status === "fulfilled") {
+    setApiStatus("Online", "Backend health check successful");
+  } else {
+    setApiStatus("Offline", healthResult.reason.message || "Backend health check failed");
+  }
+
+  if (quizzesResult.status === "fulfilled") {
+    const data = quizzesResult.value;
+    const quizzes = Array.isArray(data)
+      ? data
+      : (Array.isArray(data.quizzes) ? data.quizzes : []);
+
+    renderQuizzes(quizzes);
+  } else {
+    elements.quizCount.textContent = "--";
+    elements.quizCountLabel.textContent = "UNAVAILABLE";
+    showError(quizzesResult.reason.message || "Please check the backend API connection.");
+  }
+
+  elements.lastUpdated.textContent = "Last checked: " +
+    new Date().toLocaleString(undefined, {
+      dateStyle: "medium",
+      timeStyle: "short"
+    });
+
+  elements.refreshBtn.disabled = false;
+  elements.refreshBtn.classList.remove("loading");
+}
+
+elements.refreshBtn.addEventListener("click", loadOverview);
 loadOverview();
 </script>
+
 </body>
 </html>

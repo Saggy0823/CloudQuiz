@@ -1,84 +1,788 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz Result - CloudQuiz</title>
+<meta name="theme-color" content="#080d1b">
+<title>Examination Results | CloudQuiz</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-body{font-family:Arial,sans-serif;margin:0;background:#f4f7fb;color:#172033}
-header{background:#172554;color:white;padding:18px 7%}
-main{max-width:600px;margin:55px auto;padding:25px}
-.card{background:white;padding:30px;border-radius:10px;box-shadow:0 3px 15px #0001;text-align:center}
-.score{font-size:48px;font-weight:bold;color:#2563eb;margin:20px}
-.detail{padding:12px;border-bottom:1px solid #e2e8f0;text-align:left}
-button{padding:13px 22px;background:#2563eb;color:white;border:0;border-radius:5px;cursor:pointer;margin-top:22px}
+:root {
+    --bg:#080d1b;
+    --panel:#101a2d;
+    --panel2:#14223a;
+    --blue:#5878ff;
+    --cyan:#4bdcff;
+    --white:#f5f7ff;
+    --muted:#91a0bb;
+    --border:rgba(255,255,255,.085);
+    --green:#4ee6a2;
+    --red:#ff7185;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+    min-height:100vh;
+    background:
+        radial-gradient(ellipse at 50% -20%,rgba(69,104,255,.19),transparent 55%),
+        var(--bg);
+    color:var(--white);
+    font-family:'DM Sans',sans-serif;
+}
+button { font:inherit; cursor:pointer; }
+.topbar {
+    height:72px;
+    padding:0 5%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:rgba(12,20,37,.85);
+    border-bottom:1px solid var(--border);
+    backdrop-filter:blur(18px);
+}
+.brand {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:white;
+    text-decoration:none;
+    font:700 21px 'Space Grotesk';
+    letter-spacing:-1px;
+}
+.brand-icon {
+    width:35px;
+    height:35px;
+    display:grid;
+    place-items:center;
+    border-radius:10px;
+    background:linear-gradient(135deg,#5878ff,#25c9f5);
+}
+.brand-name span { color:var(--cyan); }
+.header-label {
+    color:var(--muted);
+    font-size:10px;
+    letter-spacing:1.4px;
+    font-weight:800;
+}
+.container {
+    max-width:1050px;
+    padding:45px 22px 70px;
+    margin:auto;
+}
+.hero {
+    text-align:center;
+    margin-bottom:30px;
+    animation:fadeUp .7s ease both;
+}
+.success-icon {
+    width:76px;
+    height:76px;
+    display:grid;
+    place-items:center;
+    margin:0 auto 20px;
+    border-radius:24px;
+    background:linear-gradient(145deg,rgba(78,230,162,.2),rgba(75,220,255,.08));
+    border:1px solid rgba(78,230,162,.22);
+    color:var(--green);
+    font-size:34px;
+    box-shadow:0 0 55px rgba(78,230,162,.1);
+    animation:popIn .7s cubic-bezier(.2,.8,.2,1) both;
+}
+.eyebrow {
+    color:var(--cyan);
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:2px;
+}
+.hero h1 {
+    font:700 clamp(27px,5vw,39px) 'Space Grotesk';
+    letter-spacing:-1.4px;
+    margin-top:10px;
+}
+.hero p {
+    color:var(--muted);
+    font-size:12px;
+    margin-top:9px;
+}
+.exam-name {
+    color:#c7d3eb;
+    font-weight:700;
+}
+.result-card {
+    padding:29px;
+    border:1px solid var(--border);
+    border-radius:19px;
+    background:linear-gradient(145deg,rgba(21,34,59,.96),rgba(13,23,40,.97));
+    box-shadow:0 25px 80px rgba(0,0,0,.2);
+    animation:fadeUp .8s .1s ease both;
+}
+.result-top {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:20px;
+    padding-bottom:24px;
+    border-bottom:1px solid var(--border);
+}
+.result-top h2 {
+    font:600 17px 'Space Grotesk';
+}
+.result-top p {
+    color:var(--muted);
+    font-size:10px;
+    margin-top:6px;
+}
+.status {
+    padding:9px 13px;
+    border-radius:30px;
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:.7px;
+    background:rgba(78,230,162,.1);
+    border:1px solid rgba(78,230,162,.2);
+    color:var(--green);
+}
+.status.fail {
+    color:var(--red);
+    background:rgba(255,113,133,.09);
+    border-color:rgba(255,113,133,.2);
+}
+.score-area {
+    display:grid;
+    grid-template-columns:230px 1fr;
+    align-items:center;
+    gap:35px;
+    padding:30px 0;
+}
+.score-ring-wrap {
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+.score-ring {
+    width:190px;
+    height:190px;
+    position:relative;
+    display:grid;
+    place-items:center;
+}
+.score-ring svg {
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    transform:rotate(-90deg);
+    overflow:visible;
+}
+.ring-track {
+    fill:none;
+    stroke:#27344d;
+    stroke-width:9;
+}
+.ring-progress {
+    fill:none;
+    stroke:url(#ringGradient);
+    stroke-width:9;
+    stroke-linecap:round;
+    stroke-dasharray:502.65;
+    stroke-dashoffset:502.65;
+    transition:stroke-dashoffset 1.5s cubic-bezier(.2,.8,.2,1);
+}
+.score-center {
+    position:relative;
+    z-index:1;
+    text-align:center;
+}
+.score-number {
+    font:700 43px 'Space Grotesk';
+    letter-spacing:-2px;
+}
+.score-number span {
+    font-size:18px;
+    color:var(--muted);
+}
+.score-center small {
+    display:block;
+    margin-top:4px;
+    color:var(--muted);
+    font-size:9px;
+    letter-spacing:1.3px;
+    font-weight:800;
+}
+.score-details h3 {
+    font:700 23px 'Space Grotesk';
+    letter-spacing:-.6px;
+}
+.score-details p {
+    max-width:420px;
+    color:var(--muted);
+    font-size:11px;
+    line-height:1.8;
+    margin-top:10px;
+}
+.score-details .highlight {
+    color:var(--cyan);
+    font-weight:700;
+}
+.metric-grid {
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-top:4px;
+}
+.metric {
+    padding:17px;
+    background:rgba(255,255,255,.025);
+    border:1px solid var(--border);
+    border-radius:11px;
+    transition:.25s;
+}
+.metric:hover {
+    transform:translateY(-4px);
+    border-color:rgba(88,120,255,.35);
+    background:rgba(88,120,255,.05);
+}
+.metric-icon {
+    width:30px;
+    height:30px;
+    display:grid;
+    place-items:center;
+    border-radius:9px;
+    background:rgba(88,120,255,.13);
+    color:#9eb0ff;
+    font-size:14px;
+    margin-bottom:12px;
+}
+.metric strong {
+    display:block;
+    font:700 23px 'Space Grotesk';
+}
+.metric small {
+    display:block;
+    color:var(--muted);
+    font-size:9px;
+    margin-top:5px;
+}
+.breakdown {
+    margin-top:22px;
+    padding:22px;
+    background:rgba(255,255,255,.02);
+    border:1px solid var(--border);
+    border-radius:13px;
+}
+.section-heading {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:19px;
+}
+.section-heading h3 {
+    font:600 14px 'Space Grotesk';
+}
+.section-heading span {
+    color:var(--muted);
+    font-size:9px;
+}
+.breakdown-bar {
+    height:11px;
+    display:flex;
+    overflow:hidden;
+    border-radius:20px;
+    background:#29364f;
+}
+.bar-correct {
+    width:0;
+    background:linear-gradient(90deg,#28bf83,#63edb2);
+    transition:width 1.2s ease;
+}
+.bar-wrong {
+    width:0;
+    background:linear-gradient(90deg,#ff647c,#f68e9b);
+    transition:width 1.2s ease;
+}
+.bar-unanswered {
+    flex:1;
+    background:#35435d;
+}
+.breakdown-legend {
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+    margin-top:17px;
+}
+.legend-item {
+    display:flex;
+    align-items:center;
+    gap:7px;
+    color:var(--muted);
+    font-size:9px;
+}
+.legend-dot {
+    width:9px;
+    height:9px;
+    border-radius:3px;
+}
+.legend-dot.correct { background:var(--green); }
+.legend-dot.wrong { background:var(--red); }
+.legend-dot.unanswered { background:#35435d; }
+.details-panel {
+    margin-top:22px;
+    padding:21px;
+    background:rgba(255,255,255,.02);
+    border:1px solid var(--border);
+    border-radius:13px;
+}
+.details-list {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+}
+.detail-item small {
+    display:block;
+    color:var(--muted);
+    font-size:9px;
+    margin-bottom:6px;
+}
+.detail-item strong {
+    font-size:11px;
+    overflow-wrap:anywhere;
+}
+.actions {
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    margin-top:26px;
+}
+.btn {
+    min-height:45px;
+    padding:0 20px;
+    border-radius:9px;
+    border:1px solid var(--border);
+    color:#dce5f8;
+    background:rgba(255,255,255,.04);
+    font-size:10px;
+    font-weight:800;
+    text-decoration:none;
+    display:inline-flex;
+    justify-content:center;
+    align-items:center;
+    transition:.25s;
+}
+.btn:hover {
+    transform:translateY(-2px);
+    border-color:rgba(88,120,255,.5);
+}
+.btn-primary {
+    border:0;
+    color:white;
+    background:linear-gradient(110deg,#5878ff,#287eea);
+    box-shadow:0 7px 22px rgba(65,104,255,.2);
+}
+.note {
+    text-align:center;
+    color:#71809b;
+    font-size:9px;
+    line-height:1.7;
+    margin-top:24px;
+}
+.error-panel {
+    max-width:520px;
+    margin:70px auto;
+    padding:30px;
+    text-align:center;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:15px;
+}
+.error-panel h2 {
+    font:700 20px 'Space Grotesk';
+}
+.error-panel p {
+    color:var(--muted);
+    font-size:11px;
+    line-height:1.8;
+    margin:12px 0 20px;
+}
+.error-panel a {
+    color:white;
+    text-decoration:none;
+    background:var(--blue);
+    border-radius:8px;
+    padding:11px 16px;
+    font-size:10px;
+    font-weight:800;
+}
+.footer {
+    text-align:center;
+    padding:22px;
+    color:#64738e;
+    font-size:9px;
+}
+@keyframes fadeUp {
+    from { opacity:0; transform:translateY(18px); }
+    to { opacity:1; transform:translateY(0); }
+}
+@keyframes popIn {
+    from { opacity:0; transform:scale(.7); }
+    to { opacity:1; transform:scale(1); }
+}
+@media(max-width:700px) {
+    .container { padding:30px 14px 50px; }
+    .result-card { padding:19px; }
+    .score-area { grid-template-columns:1fr; gap:20px; text-align:center; }
+    .score-details p { margin-left:auto; margin-right:auto; }
+    .metric-grid { grid-template-columns:repeat(2,1fr); }
+    .result-top { align-items:flex-start; flex-direction:column; }
+}
+@media(max-width:450px) {
+    .header-label { font-size:8px; }
+    .brand { font-size:18px; }
+    .brand-icon { width:31px; height:31px; }
+    .score-ring { width:165px; height:165px; }
+    .score-number { font-size:36px; }
+    .details-list { grid-template-columns:1fr; }
+    .actions { flex-direction:column; }
+    .btn { width:100%; }
+}
 </style>
 </head>
+
 <body>
 
-<header><strong>CloudQuiz - Examination Result</strong></header>
+<header class="topbar">
+    <a href="dashboard.html" class="brand">
+        <span class="brand-icon">☁</span>
+        <span class="brand-name">Cloud<span>Quiz</span></span>
+    </a>
+    <div class="header-label">EXAMINATION REPORT</div>
+</header>
 
-<main>
-<div class="card">
-    <h2>Quiz Completed!</h2>
-    <p>Your examination result</p>
+<main class="container">
+    <section class="hero">
+        <div class="success-icon" id="heroIcon">✓</div>
+        <div class="eyebrow">ASSESSMENT COMPLETED</div>
+        <h1 id="heroTitle">Your results are ready.</h1>
+        <p id="heroDescription">Here is your performance summary for <span class="exam-name" id="heroExamName">your examination</span>.</p>
+    </section>
 
-    <div class="score" id="percentage">--%</div>
+    <div id="resultContent" style="display:none;">
+        <section class="result-card">
+            <div class="result-top">
+                <div>
+                    <h2>Performance overview</h2>
+                    <p id="resultSubtitle">Your examination performance at a glance.</p>
+                </div>
+                <span class="status" id="resultStatus">COMPLETED</span>
+            </div>
 
-    <div class="detail"><strong>Student:</strong> <span id="student"></span></div>
-    <div class="detail"><strong>Quiz ID:</strong> <span id="quiz"></span></div>
-    <div class="detail"><strong>Score:</strong> <span id="score"></span></div>
-    <div class="detail"><strong>Total Questions:</strong> <span id="total"></span></div>
-    <div class="detail"><strong>Result ID:</strong> <span id="resultId"></span></div>
-    <div class="detail"><strong>Submitted:</strong> <span id="date"></span></div>
+            <div class="score-area">
+                <div class="score-ring-wrap">
+                    <div class="score-ring">
+                        <svg viewBox="0 0 180 180">
+                            <defs>
+                                <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#5878ff"/>
+                                    <stop offset="100%" stop-color="#4bdcff"/>
+                                </linearGradient>
+                            </defs>
+                            <circle class="ring-track" cx="90" cy="90" r="80"/>
+                            <circle class="ring-progress" id="ringProgress" cx="90" cy="90" r="80"/>
+                        </svg>
+                        <div class="score-center">
+                            <div class="score-number" id="scorePercentage">--<span>%</span></div>
+                            <small>YOUR SCORE</small>
+                        </div>
+                    </div>
+                </div>
 
-    <button onclick="location.href='dashboard.html'">Back to Dashboard</button>
-    <button onclick="logout()" style="background:#dc2626">Logout</button>
-</div>
+                <div class="score-details">
+                    <h3 id="performanceTitle">Well done!</h3>
+                    <p id="performanceDescription">Your examination has been submitted successfully. Your performance details are shown below.</p>
+                </div>
+            </div>
+
+            <div class="metric-grid">
+                <div class="metric">
+                    <div class="metric-icon">★</div>
+                    <strong id="scoreValue">--</strong>
+                    <small>Total score</small>
+                </div>
+                <div class="metric">
+                    <div class="metric-icon">✓</div>
+                    <strong id="correctValue">--</strong>
+                    <small>Correct answers</small>
+                </div>
+                <div class="metric">
+                    <div class="metric-icon">×</div>
+                    <strong id="incorrectValue">--</strong>
+                    <small>Incorrect answers</small>
+                </div>
+                <div class="metric">
+                    <div class="metric-icon">▤</div>
+                    <strong id="totalValue">--</strong>
+                    <small>Total questions</small>
+                </div>
+            </div>
+
+            <section class="breakdown" id="breakdownSection">
+                <div class="section-heading">
+                    <h3>Answer breakdown</h3>
+                    <span id="breakdownSubtitle">Question distribution</span>
+                </div>
+                <div class="breakdown-bar">
+                    <div class="bar-correct" id="correctBar"></div>
+                    <div class="bar-wrong" id="wrongBar"></div>
+                    <div class="bar-unanswered" id="unansweredBar"></div>
+                </div>
+                <div class="breakdown-legend">
+                    <div class="legend-item"><span class="legend-dot correct"></span> Correct</div>
+                    <div class="legend-item"><span class="legend-dot wrong"></span> Incorrect</div>
+                    <div class="legend-item"><span class="legend-dot unanswered"></span> Unanswered</div>
+                </div>
+            </section>
+
+            <section class="details-panel">
+                <div class="section-heading">
+                    <h3>Examination details</h3>
+                    <span>SESSION INFORMATION</span>
+                </div>
+                <div class="details-list">
+                    <div class="detail-item">
+                        <small>Examination name</small>
+                        <strong id="detailExamName">--</strong>
+                    </div>
+                    <div class="detail-item">
+                        <small>Submission status</small>
+                        <strong id="detailStatus">Submitted</strong>
+                    </div>
+                    <div class="detail-item">
+                        <small>Attempt ID</small>
+                        <strong id="detailAttempt">Not provided</strong>
+                    </div>
+                    <div class="detail-item">
+                        <small>Completion date</small>
+                        <strong id="detailDate">--</strong>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <div class="actions">
+            <a class="btn btn-primary" href="dashboard.html">← Back to dashboard</a>
+            <button class="btn" id="printBtn" type="button">Print result ↗</button>
+        </div>
+
+        <p class="note">CloudQuiz · Cloud-based examination platform<br>Your result is displayed using the information returned by the examination service.</p>
+    </div>
+
+    <div id="errorPanel" style="display:none;"></div>
 </main>
 
+<footer class="footer">© 2026 CloudQuiz. Built for smarter assessments.</footer>
+
 <script>
-const token = sessionStorage.getItem("cq_id_token");
-const expiry = Number(sessionStorage.getItem("cq_token_expiry") || 0);
-
-if (!token || Date.now() >= expiry) {
-    sessionStorage.clear();
-    window.location.replace("login.html");
+function getElement(id) {
+    return document.getElementById(id);
 }
 
-function logout() {
-    sessionStorage.clear();
-    window.location.replace("login.html");
+function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    })[char]);
 }
 
-const savedResult = sessionStorage.getItem("cq_last_result");
+function showError(title,message) {
+    getElement("resultContent").style.display = "none";
+    getElement("errorPanel").style.display = "block";
+    document.querySelector(".hero")?.style.setProperty("display", "none");
+    getElement("errorPanel").innerHTML = `
+        <div class="error-panel">
+            <h2>${escapeHTML(title)}</h2>
+            <p>${escapeHTML(message)}</p>
+            <a href="dashboard.html">Return to dashboard →</a>
+        </div>`;
+}
 
-if (!savedResult) {
-    document.querySelector(".card").innerHTML =
-        "<h2>No result available</h2><p>Please complete a quiz first.</p><button onclick=\"location.href='dashboard.html'\">Dashboard</button>";
-} else {
-    try {
-        const result = JSON.parse(savedResult);
-
-        document.getElementById("percentage").textContent =
-            Number(result.percentage).toFixed(2) + "%";
-
-        document.getElementById("student").textContent =
-            result.studentEmail || sessionStorage.getItem("cq_user_email") || "Student";
-
-        document.getElementById("quiz").textContent = result.quizId;
-        document.getElementById("score").textContent = result.score;
-        document.getElementById("total").textContent = result.totalQuestions;
-        document.getElementById("resultId").textContent = result.resultId;
-        document.getElementById("date").textContent =
-            new Date(result.submittedAt).toLocaleString();
-
-    } catch (error) {
-        document.querySelector(".card").innerHTML =
-            "<h2>Unable to display result</h2><p>Please return to the dashboard.</p><button onclick=\"location.href='dashboard.html'\">Dashboard</button>";
+function firstValue(objects,keys) {
+    for (const object of objects) {
+        if (!object || typeof object !== "object") continue;
+        for (const key of keys) {
+            const value = object[key];
+            if (value !== undefined && value !== null && value !== "") return value;
+        }
     }
+    return null;
 }
+
+function numberValue(objects,keys) {
+    const value = firstValue(objects,keys);
+    if (value === null) return null;
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+}
+
+function formatDate(value) {
+    if (!value) return new Date().toLocaleString();
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
+}
+
+function renderResults() {
+    const stored = sessionStorage.getItem("cq_last_result");
+
+    if (!stored) {
+        showError(
+            "Result not available",
+            "We could not find a saved result for this session. Please return to your dashboard."
+        );
+        return;
+    }
+
+    let response;
+    try {
+        response = JSON.parse(stored);
+    } catch (error) {
+        showError("Unable to read result","The saved examination result could not be interpreted.");
+        return;
+    }
+
+    const result = response.result || response.data || response;
+    const quiz = response.quiz || result.quiz || {};
+    const sources = [result,response,quiz];
+
+    const title = firstValue(sources,["quizTitle","testTitle","title","quizName","name"]) || "CloudQuiz Examination";
+
+    const score = numberValue(sources,["score","marksObtained","totalScore","obtainedMarks"]);
+    const total = numberValue(sources,["totalQuestions","questionCount","numberOfQuestions"]);
+    const maxScore = numberValue(sources,["maxScore","totalMarks","maximumMarks","possibleScore"]) ?? total;
+
+    const correct = numberValue(sources,["correct","correctAnswers","correctCount"]) ?? score;
+    const incorrect = numberValue(sources,["incorrect","incorrectAnswers","wrongAnswers","incorrectCount"]) ??
+        (total !== null && score !== null ? Math.max(0,total-score) : null);
+    const unanswered = numberValue(sources,["unanswered","unansweredQuestions","skipped"]) ??
+        (total !== null ? 0 : null);
+
+    const percentageFromAPI = numberValue(sources,["percentage","scorePercentage","percent"]);
+    const percentage = percentageFromAPI !== null
+        ? Math.max(0,Math.min(100,percentageFromAPI))
+        : (score !== null && maxScore > 0 ? Math.max(0,Math.min(100,score / maxScore * 100)) : null);
+
+    const passValue = firstValue(sources,["passed","isPassed","pass"]);
+    const passingMarks = numberValue(sources,["passingPercentage","passPercentage","passingMarks"]);
+    let passed = null;
+
+    if (typeof passValue === "boolean") passed = passValue;
+    else if (typeof passValue === "string") {
+        if (["true","passed","pass","yes"].includes(passValue.toLowerCase())) passed = true;
+        if (["false","failed","fail","no"].includes(passValue.toLowerCase())) passed = false;
+    }
+    if (passed === null && percentage !== null && passingMarks !== null) {
+        passed = percentage >= passingMarks;
+    }
+
+    getElement("heroExamName").textContent = title;
+    getElement("detailExamName").textContent = title;
+    getElement("detailDate").textContent = formatDate(
+        firstValue(sources,["submittedAt","completedAt","createdAt","timestamp"])
+    );
+
+    const attempt = firstValue(sources,["attemptId","resultId","submissionId","id"]);
+    getElement("detailAttempt").textContent = attempt || "Not provided";
+
+    getElement("resultSubtitle").textContent = "Your examination performance at a glance.";
+
+    if (passed === true) {
+        getElement("resultStatus").textContent = "PASSED";
+        getElement("resultStatus").classList.remove("fail");
+        getElement("heroIcon").textContent = "✓";
+        getElement("performanceTitle").textContent = "Excellent work!";
+        getElement("performanceDescription").textContent =
+            "You have successfully met the passing requirement. Keep building on your progress.";
+    } else if (passed === false) {
+        getElement("resultStatus").textContent = "NOT PASSED";
+        getElement("resultStatus").classList.add("fail");
+        getElement("heroIcon").textContent = "↗";
+        getElement("performanceTitle").textContent = "Keep improving.";
+        getElement("performanceDescription").textContent =
+            "Every attempt is an opportunity to learn. Review your concepts and keep practising.";
+    } else {
+        getElement("resultStatus").textContent = "SUBMITTED";
+        getElement("performanceTitle").textContent = "Submission complete.";
+        getElement("performanceDescription").textContent =
+            "Your examination has been submitted. The available performance details are displayed below.";
+    }
+
+    getElement("heroTitle").textContent =
+        passed === true ? "Congratulations on your result!" :
+        passed === false ? "Your examination is complete." :
+        "Your results are ready.";
+
+    getElement("detailStatus").textContent =
+        passed === true ? "Passed" : passed === false ? "Not passed" : "Submitted";
+
+    getElement("scorePercentage").innerHTML = percentage !== null
+        ? `${Math.round(percentage)}<span>%</span>` : `--<span>%</span>`;
+
+    getElement("scoreValue").textContent =
+        score !== null ? (maxScore !== null ? `${score} / ${maxScore}` : score) : "--";
+
+    getElement("correctValue").textContent = correct !== null ? correct : "--";
+    getElement("incorrectValue").textContent = incorrect !== null ? incorrect : "--";
+    getElement("totalValue").textContent = total !== null ? total : "--";
+
+    if (percentage !== null) {
+        const circumference = 2 * Math.PI * 80;
+        const offset = circumference - (percentage / 100) * circumference;
+        setTimeout(() => {
+            getElement("ringProgress").style.strokeDashoffset = offset;
+        },200);
+    }
+
+    if (total !== null && total > 0) {
+        const correctCount = correct ?? 0;
+        const wrongCount = incorrect ?? 0;
+        const unansweredCount = unanswered ?? Math.max(0,total-correctCount-wrongCount);
+
+        getElement("correctBar").style.width = `${Math.min(100,correctCount/total*100)}%`;
+        getElement("wrongBar").style.width = `${Math.min(100,wrongCount/total*100)}%`;
+        getElement("unansweredBar").style.flex = String(Math.max(0,unansweredCount));
+        getElement("breakdownSubtitle").textContent = `${total} total questions`;
+    } else {
+        getElement("breakdownSection").style.display = "none";
+    }
+
+    getElement("resultContent").style.display = "block";
+}
+
+getElement("printBtn").addEventListener("click",() => window.print());
+
+window.addEventListener("DOMContentLoaded",renderResults);
 </script>
+
+<style>
+@media print {
+    body { background:white !important; color:#111 !important; }
+    .topbar,.actions,.footer { display:none !important; }
+    .container { max-width:100%; padding:0; }
+    .result-card,.breakdown,.details-panel,.metric {
+        background:white !important;
+        color:#111 !important;
+        box-shadow:none !important;
+        border:1px solid #ddd !important;
+    }
+    .result-card h2,.result-card h3,.result-card strong,
+    .result-card .score-number { color:#111 !important; }
+    .result-card p,.result-card small,.detail-item small,
+    .legend-item,.result-top p { color:#555 !important; }
+    .hero { color:#111 !important; }
+    .hero p { color:#555 !important; }
+}
+</style>
 
 </body>
 </html>

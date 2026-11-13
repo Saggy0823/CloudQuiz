@@ -1,187 +1,799 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - CloudQuiz</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f4f7fb; margin: 0; color: #172033; }
-        .container { max-width: 420px; margin: 70px auto; padding: 25px; background: white; border-radius: 10px; box-shadow: 0 4px 18px #0001; }
-        h2 { text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; box-sizing: border-box; border: 1px solid #cbd5e1; border-radius: 5px; }
-        button { width: 100%; padding: 13px; margin-top: 12px; background: #2563eb; color: white; border: 0; border-radius: 5px; cursor: pointer; }
-        button:disabled { opacity: .6; cursor: wait; }
-        .message { margin-top: 15px; text-align: center; white-space: pre-wrap; }
-        a { color: #2563eb; }
-    </style>
-</head>
-<body>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080d1b">
+<title>Sign In | CloudQuiz</title>
 
-<div class="container">
-    <h2>CloudQuiz Login</h2>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <form id="loginForm">
-        <input type="email" id="email" placeholder="Email Address" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <button type="submit" id="loginBtn">Login</button>
-    </form>
-
-    <p style="text-align:center">
-        <a href="#" id="forgotLink">Forgot Password?</a>
-    </p>
-
-    <form id="resetForm" hidden>
-        <h3>Reset Password</h3>
-        <input type="email" id="resetEmail" placeholder="Registered email" required>
-        <button type="submit">Send Reset Code</button>
-    </form>
-
-    <form id="confirmResetForm" hidden>
-        <input type="text" id="resetCode" placeholder="Email reset code" required>
-        <input type="password" id="newPassword" placeholder="New password (minimum 8 characters)" minlength="8" required>
-        <button type="submit">Change Password</button>
-    </form>
-
-    <div class="message" id="message"></div>
-
-    <p style="text-align:center">
-        New user? <a href="register.html">Create Account</a>
-    </p>
-    <p style="text-align:center"><a href="index.html">Back to Home</a></p>
-</div>
-
-<script>
-const REGION = "ap-southeast-2";
-const CLIENT_ID = "489b0452mtogi849rlr728idle";
-
-const message = document.getElementById("message");
-const loginForm = document.getElementById("loginForm");
-const resetForm = document.getElementById("resetForm");
-const confirmResetForm = document.getElementById("confirmResetForm");
-
-let resetEmail = "";
-
-function showMessage(text, success = false) {
-    message.textContent = text;
-    message.style.color = success ? "green" : "red";
+<style>
+:root {
+    --bg: #080d1b;
+    --panel: #101a2e;
+    --panel2: #14223a;
+    --blue: #5878ff;
+    --cyan: #4bdcff;
+    --white: #f5f7ff;
+    --muted: #98a8c3;
+    --border: rgba(255,255,255,.1);
+    --danger: #ff7185;
+    --success: #4ee6a2;
 }
 
-async function cognitoRequest(action, payload) {
-    const response = await fetch(
-        `https://cognito-idp.${REGION}.amazonaws.com/`,
-        {
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--white);
+    background: var(--bg);
+    display: flex;
+    overflow-x: hidden;
+}
+
+button, input { font: inherit; }
+
+a { color: inherit; text-decoration: none; }
+
+.glow {
+    position: fixed;
+    width: 520px;
+    height: 520px;
+    border-radius: 50%;
+    filter: blur(140px);
+    opacity: .17;
+    pointer-events: none;
+}
+
+.glow-one { background: #315cff; top: -270px; left: -230px; }
+.glow-two { background: #00b9e8; bottom: -300px; right: -200px; }
+
+.left-panel {
+    width: 51%;
+    min-height: 100vh;
+    padding: 42px 7%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    overflow: hidden;
+    border-right: 1px solid var(--border);
+    background:
+        radial-gradient(circle at 50% 50%, rgba(65,105,255,.12), transparent 55%),
+        linear-gradient(145deg, #0e1930, #080d1b);
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 11px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 25px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    width: fit-content;
+}
+
+.brand-icon {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--blue), #25c9f5);
+    box-shadow: 0 5px 25px rgba(85,119,255,.35);
+    font-size: 20px;
+}
+
+.brand span:last-child { color: var(--cyan); }
+
+.left-content {
+    max-width: 530px;
+    position: relative;
+    z-index: 2;
+    margin: 70px 0;
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--cyan);
+    background: rgba(75,220,255,.07);
+    border: 1px solid rgba(75,220,255,.2);
+    border-radius: 30px;
+    padding: 9px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .7px;
+    margin-bottom: 28px;
+}
+
+.dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 12px var(--success);
+}
+
+.left-content h1 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: clamp(42px, 5vw, 65px);
+    line-height: 1.08;
+    letter-spacing: -3px;
+}
+
+.gradient {
+    background: linear-gradient(100deg, #7892ff, #4bdcff);
+    color: transparent;
+    background-clip: text;
+    -webkit-background-clip: text;
+}
+
+.left-content p {
+    margin-top: 22px;
+    max-width: 440px;
+    color: var(--muted);
+    line-height: 1.9;
+    font-size: 15px;
+}
+
+.visual-card {
+    max-width: 440px;
+    padding: 22px;
+    background: rgba(21,36,62,.7);
+    border: 1px solid rgba(135,165,255,.17);
+    border-radius: 18px;
+    box-shadow: 0 25px 70px rgba(0,0,0,.2);
+    backdrop-filter: blur(15px);
+    transform: rotate(-2deg);
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%,100% { transform: translateY(0) rotate(-2deg); }
+    50% { transform: translateY(-10px) rotate(-1deg); }
+}
+
+.visual-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.visual-top small { color: var(--muted); font-size: 10px; }
+.visual-top strong { font-size: 14px; display: block; margin-top: 5px; }
+
+.secure {
+    color: var(--success);
+    background: rgba(78,230,162,.1);
+    padding: 7px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.visual-stat {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 19px;
+}
+
+.stat-icon {
+    width: 43px;
+    height: 43px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: rgba(85,119,255,.15);
+    color: #8ca3ff;
+    font-size: 19px;
+}
+
+.visual-stat strong { font-size: 13px; }
+.visual-stat small { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; }
+
+.left-footer {
+    color: #71809b;
+    font-size: 11px;
+}
+
+.right-panel {
+    flex: 1;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 45px 7%;
+    position: relative;
+    z-index: 1;
+}
+
+.login-container {
+    width: 100%;
+    max-width: 430px;
+}
+
+.mobile-brand { display: none; }
+
+.form-heading { margin-bottom: 32px; }
+
+.form-heading .eyebrow { margin-bottom: 18px; }
+
+.form-heading h2 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 35px;
+    letter-spacing: -1.4px;
+}
+
+.form-heading p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 10px;
+    line-height: 1.7;
+}
+
+.form-group { margin-bottom: 20px; }
+
+.form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 9px;
+    color: #dce4f7;
+}
+
+.input-wrap { position: relative; }
+
+.input-wrap input {
+    width: 100%;
+    height: 53px;
+    background: rgba(19,32,54,.85);
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    outline: none;
+    padding: 0 47px 0 45px;
+    color: white;
+    font-size: 13px;
+    transition: .25s;
+}
+
+.input-wrap input::placeholder { color: #64738f; }
+
+.input-wrap input:focus {
+    border-color: #6382ff;
+    box-shadow: 0 0 0 3px rgba(85,119,255,.12);
+    background: #15243e;
+}
+
+.input-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8192b0;
+    font-size: 16px;
+    pointer-events: none;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #8c9bb5;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.toggle-password:hover { color: white; }
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 5px 0 25px;
+    gap: 10px;
+}
+
+.remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.remember input { accent-color: var(--blue); }
+
+.forgot {
+    color: #8ca3ff;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.forgot:hover { color: var(--cyan); }
+
+.submit-btn {
+    width: 100%;
+    height: 54px;
+    border: none;
+    border-radius: 11px;
+    background: linear-gradient(110deg, #5577ff, #287eea);
+    color: white;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(65,104,255,.23);
+    transition: .25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 35px rgba(65,104,255,.38);
+}
+
+.submit-btn:disabled {
+    opacity: .65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.spinner {
+    width: 17px;
+    height: 17px;
+    border: 2px solid rgba(255,255,255,.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.message {
+    display: none;
+    padding: 12px 14px;
+    border-radius: 9px;
+    margin-bottom: 18px;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.message.error {
+    display: block;
+    color: #ff9aaa;
+    border: 1px solid rgba(255,113,133,.2);
+    background: rgba(255,113,133,.08);
+}
+
+.message.success {
+    display: block;
+    color: var(--success);
+    border: 1px solid rgba(78,230,162,.2);
+    background: rgba(78,230,162,.08);
+}
+
+.signup-line {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 27px;
+}
+
+.signup-line a {
+    color: #8ca3ff;
+    font-weight: 700;
+}
+
+.signup-line a:hover { color: var(--cyan); }
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin: 28px 0;
+    color: #64738f;
+    font-size: 10px;
+}
+
+.divider::before, .divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+}
+
+.security-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #7787a2;
+    font-size: 10px;
+    text-align: center;
+}
+
+.security-note span { color: var(--success); }
+
+.bottom-link {
+    text-align: center;
+    margin-top: 28px;
+    color: #71809b;
+    font-size: 11px;
+}
+
+.bottom-link a { color: #a9b8d3; }
+.bottom-link a:hover { color: white; }
+
+@media(max-width: 900px) {
+    .left-panel { width: 44%; padding: 35px 5%; }
+    .right-panel { padding: 40px 5%; }
+    .left-content h1 { font-size: 45px; }
+    .visual-card { padding: 17px; }
+}
+
+@media(max-width: 700px) {
+    body { display: block; }
+
+    .left-panel { display: none; }
+
+    .right-panel {
+        min-height: 100vh;
+        padding: 35px 24px;
+    }
+
+    .mobile-brand {
+        display: flex;
+        margin-bottom: 55px;
+    }
+
+    .login-container { max-width: 440px; }
+    .form-heading h2 { font-size: 32px; }
+}
+
+@media(prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="glow glow-one"></div>
+<div class="glow glow-two"></div>
+
+<section class="left-panel">
+
+    <a href="index.html" class="brand">
+        <span class="brand-icon">☁</span>
+        Cloud<span>Quiz</span>
+    </a>
+
+    <div class="left-content">
+        <div class="eyebrow">
+            <span class="dot"></span>
+            YOUR LEARNING JOURNEY CONTINUES
+        </div>
+
+        <h1>
+            Welcome back.<br>
+            Let's make your<br>
+            next attempt <span class="gradient">count.</span>
+        </h1>
+
+        <p>
+            Sign in to access your examinations, discover assessments,
+            monitor your performance, and manage your tests — all in
+            one connected learning environment.
+        </p>
+
+        <div class="visual-card">
+            <div class="visual-top">
+                <div>
+                    <small>CLOUDQUIZ PLATFORM</small>
+                    <strong>Your assessments, organized.</strong>
+                </div>
+                <span class="secure">● SECURE</span>
+            </div>
+
+            <div class="visual-stat">
+                <div class="stat-icon">◈</div>
+                <div>
+                    <strong>Secure authentication</strong>
+                    <small>Your account is protected by Amazon Cognito</small>
+                </div>
+            </div>
+
+            <div class="visual-stat">
+                <div class="stat-icon">▤</div>
+                <div>
+                    <strong>Instant assessment results</strong>
+                    <small>Track submitted examination performance</small>
+                </div>
+            </div>
+
+            <div class="visual-stat">
+                <div class="stat-icon">☁</div>
+                <div>
+                    <strong>Cloud-powered access</strong>
+                    <small>Access your platform through the web</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="left-footer">
+        © 2026 CloudQuiz. Built for smarter assessments.
+    </div>
+</section>
+
+<section class="right-panel">
+    <div class="login-container">
+
+        <a href="index.html" class="brand mobile-brand">
+            <span class="brand-icon">☁</span>
+            Cloud<span>Quiz</span>
+        </a>
+
+        <div class="form-heading">
+            <div class="eyebrow">ACCOUNT ACCESS</div>
+            <h2>Sign in to <span class="gradient">CloudQuiz.</span></h2>
+            <p>Enter your registered email and password to continue.</p>
+        </div>
+
+        <div id="message" class="message" role="alert" aria-live="polite"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email address</label>
+                <div class="input-wrap">
+                    <span class="input-icon">✉</span>
+                    <input
+                        type="email"
+                        id="email"
+                        placeholder="you@example.com"
+                        autocomplete="username"
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-wrap">
+                    <span class="input-icon">♙</span>
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+                    <button type="button" class="toggle-password" id="togglePassword">
+                        SHOW
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-options">
+                <label class="remember">
+                    <input type="checkbox" id="rememberEmail">
+                    Remember email
+                </label>
+
+                <a href="register.html" class="forgot">Need an account?</a>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <span id="buttonText">Sign in to your account →</span>
+                <span class="spinner" id="spinner"></span>
+            </button>
+        </form>
+
+        <div class="divider">SECURE ACCOUNT ACCESS</div>
+
+        <div class="security-note">
+            <span>◈</span>
+            Authentication secured with Amazon Cognito
+        </div>
+
+        <div class="signup-line">
+            Don't have an account?
+            <a href="register.html">Create an account</a>
+        </div>
+
+        <div class="bottom-link">
+            <a href="index.html">← Back to CloudQuiz home</a>
+        </div>
+
+    </div>
+</section>
+
+<script>
+/*
+ * CloudQuiz Cognito Configuration
+ * Existing AWS User Pool configuration.
+ */
+const COGNITO_REGION = "ap-southeast-2";
+const CLIENT_ID = "489b0452mtogi849rlr728idle";
+
+const COGNITO_ENDPOINT =
+    `https://cognito-idp.${COGNITO_REGION}.amazonaws.com/`;
+
+const form = document.getElementById("loginForm");
+const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password");
+const messageBox = document.getElementById("message");
+const submitBtn = document.getElementById("submitBtn");
+const buttonText = document.getElementById("buttonText");
+const spinner = document.getElementById("spinner");
+
+const rememberEmail = document.getElementById("rememberEmail");
+
+function showMessage(message, type = "error") {
+    messageBox.textContent = message;
+    messageBox.className = `message ${type}`;
+}
+
+function setLoading(loading) {
+    submitBtn.disabled = loading;
+    spinner.style.display = loading ? "inline-block" : "none";
+    buttonText.textContent = loading
+        ? "Signing you in..."
+        : "Sign in to your account →";
+}
+
+function getFriendlyError(error) {
+    const messages = {
+        "NotAuthorizedException": "Incorrect email or password. Please try again.",
+        "UserNotFoundException": "No account was found with this email address.",
+        "UserNotConfirmedException": "Your email is not verified yet. Please complete registration confirmation.",
+        "PasswordResetRequiredException": "Your password needs to be reset before signing in.",
+        "TooManyRequestsException": "Too many attempts. Please wait and try again.",
+        "InvalidParameterException": "Invalid login details. Please check your information.",
+        "NetworkError": "Unable to connect. Please check your internet connection."
+    };
+
+    return messages[error] ||
+        "Unable to sign in. Please check your details and try again.";
+}
+
+// Restore remembered email only.
+const savedEmail = localStorage.getItem("cq_remembered_email");
+
+if (savedEmail) {
+    emailInput.value = savedEmail;
+    rememberEmail.checked = true;
+}
+
+// Show / hide password.
+document.getElementById("togglePassword").addEventListener("click", () => {
+    const isPassword = passwordInput.type === "password";
+
+    passwordInput.type = isPassword ? "text" : "password";
+    document.getElementById("togglePassword").textContent =
+        isPassword ? "HIDE" : "SHOW";
+});
+
+// Cognito authentication.
+form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const email = emailInput.value.trim().toLowerCase();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+        showMessage("Please enter both your email and password.");
+        return;
+    }
+
+    if (!emailInput.checkValidity()) {
+        showMessage("Please enter a valid email address.");
+        return;
+    }
+
+    setLoading(true);
+    messageBox.className = "message";
+
+    try {
+        const response = await fetch(COGNITO_ENDPOINT, {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-amz-json-1.1",
-                "X-Amz-Target": `AWSCognitoIdentityProviderService.${action}`
+                "X-Amz-Target":
+                    "AWSCognitoIdentityProviderService.InitiateAuth"
             },
-            body: JSON.stringify(payload)
-        }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-        throw new Error(data.message || data.Message || "Authentication failed.");
-    }
-
-    return data;
-}
-
-// Login
-loginForm.addEventListener("submit", async function(event) {
-    event.preventDefault();
-
-    const button = document.getElementById("loginBtn");
-    button.disabled = true;
-    showMessage("Signing in...");
-
-    const email = document.getElementById("email").value.trim().toLowerCase();
-    const password = document.getElementById("password").value;
-
-    try {
-        const data = await cognitoRequest("InitiateAuth", {
-            AuthFlow: "USER_PASSWORD_AUTH",
-            ClientId: CLIENT_ID,
-            AuthParameters: {
-                USERNAME: email,
-                PASSWORD: password
-            }
+            body: JSON.stringify({
+                AuthFlow: "USER_PASSWORD_AUTH",
+                ClientId: CLIENT_ID,
+                AuthParameters: {
+                    USERNAME: email,
+                    PASSWORD: password
+                }
+            })
         });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            const errorName =
+                data.__type?.split("#").pop() ||
+                data.code ||
+                "UnknownError";
+
+            throw new Error(errorName);
+        }
+
+        // Handle Cognito flows that need additional steps separately.
+        if (!data.AuthenticationResult) {
+            if (data.ChallengeName) {
+                throw new Error(
+                    "Additional authentication is required (" +
+                    data.ChallengeName +
+                    "). This login page currently supports standard password sign-in only."
+                );
+            }
+
+            throw new Error("Authentication could not be completed.");
+        }
 
         const auth = data.AuthenticationResult;
 
-        if (!auth || !auth.IdToken) {
-            throw new Error("Login requires an additional authentication step.");
+        if (!auth.IdToken || !auth.AccessToken) {
+            throw new Error("Cognito did not return the required login tokens.");
         }
 
-        // Store tokens for the current browser session only.
+        // Preserve the session keys used by the existing CloudQuiz pages.
         sessionStorage.setItem("cq_id_token", auth.IdToken);
         sessionStorage.setItem("cq_access_token", auth.AccessToken);
         sessionStorage.setItem("cq_refresh_token", auth.RefreshToken || "");
-        sessionStorage.setItem("cq_token_expiry", String(Date.now() + auth.ExpiresIn * 1000));
+        sessionStorage.setItem(
+            "cq_token_expiry",
+            String(Date.now() + (auth.ExpiresIn || 3600) * 1000)
+        );
         sessionStorage.setItem("cq_user_email", email);
 
-        showMessage("Login successful! Redirecting...", true);
+        if (rememberEmail.checked) {
+            localStorage.setItem("cq_remembered_email", email);
+        } else {
+            localStorage.removeItem("cq_remembered_email");
+        }
+
+        showMessage("Login successful! Redirecting to your dashboard...", "success");
 
         setTimeout(() => {
             window.location.href = "dashboard.html";
         }, 700);
 
     } catch (error) {
-        showMessage(error.message);
-    } finally {
-        button.disabled = false;
-    }
-});
+        console.error("CloudQuiz login error:", error);
 
-// Show password reset form
-document.getElementById("forgotLink").addEventListener("click", function(event) {
-    event.preventDefault();
-    loginForm.hidden = true;
-    resetForm.hidden = false;
-    showMessage("");
-});
+        showMessage(
+            getFriendlyError(error.message),
+            "error"
+        );
 
-// Request password reset code
-resetForm.addEventListener("submit", async function(event) {
-    event.preventDefault();
-
-    resetEmail = document.getElementById("resetEmail").value.trim().toLowerCase();
-
-    try {
-        await cognitoRequest("ForgotPassword", {
-            ClientId: CLIENT_ID,
-            Username: resetEmail
-        });
-
-        resetForm.hidden = true;
-        confirmResetForm.hidden = false;
-        showMessage("Password reset code sent to your email.", true);
-
-    } catch (error) {
-        showMessage(error.message);
-    }
-});
-
-// Confirm password reset
-confirmResetForm.addEventListener("submit", async function(event) {
-    event.preventDefault();
-
-    try {
-        await cognitoRequest("ConfirmForgotPassword", {
-            ClientId: CLIENT_ID,
-            Username: resetEmail,
-            ConfirmationCode: document.getElementById("resetCode").value.trim(),
-            Password: document.getElementById("newPassword").value
-        });
-
-        confirmResetForm.hidden = true;
-        loginForm.hidden = false;
-        showMessage("Password changed successfully. Please log in.", true);
-
-    } catch (error) {
-        showMessage(error.message);
+        setLoading(false);
     }
 });
 </script>

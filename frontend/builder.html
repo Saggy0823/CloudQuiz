@@ -1,134 +1,967 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Test Builder - CloudQuiz</title>
+<meta name="theme-color" content="#080d1b">
+<title>Test Builder | CloudQuiz</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f4f7fb;color:#172033}
-header{background:#172554;color:white;padding:17px 6%;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-header a{color:white;text-decoration:none}
-.header-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-button,.link-button{border:0;border-radius:6px;padding:11px 16px;background:#2563eb;color:white;cursor:pointer;font-size:14px;text-decoration:none;display:inline-block}
-button:hover,.link-button:hover{opacity:.88}
-button:disabled{opacity:.5;cursor:not-allowed}
-.danger{background:#dc2626}
-.secondary{background:#475569}
-main{max-width:1050px;margin:30px auto;padding:18px}
-.panel{background:white;border-radius:10px;padding:23px;margin-bottom:23px;box-shadow:0 3px 12px #0001}
-h2{margin-top:0}
-label{display:block;font-weight:bold;margin:14px 0 7px}
-input,textarea,select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:6px;font:inherit;background:white}
-textarea{resize:vertical;min-height:75px}
-.grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
-.question-card{border:1px solid #dbe3ee;padding:17px;border-radius:8px;margin:17px 0;background:#fbfdff}
-.question-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
-.option-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin:9px 0}
-.option-row button{padding:8px 12px}
-.correct-select{margin-top:8px}
-.form-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
-#message{white-space:pre-wrap;margin:14px 0;color:#475569}
-.notice{padding:15px;border-radius:7px;background:#eff6ff;color:#1e40af;margin:15px 0;overflow-wrap:anywhere}
-.key-box{background:#ecfdf5;color:#065f46;padding:18px;border-radius:8px;margin-top:16px;overflow-wrap:anywhere}
-.key-value{font-size:20px;font-weight:bold;letter-spacing:1px;margin:12px 0}
-.test-card{border:1px solid #e2e8f0;border-radius:8px;padding:17px;margin:13px 0}
-.test-card h3{margin:0 0 9px}
-.test-meta{color:#64748b;font-size:13px;line-height:1.7}
-.test-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:650px}
-th,td{text-align:left;padding:12px;border-bottom:1px solid #e2e8f0;font-size:14px}
-th{background:#f8fafc}
-.empty{color:#64748b;padding:15px 0}
-.hidden{display:none}
-@media(max-width:650px){main{padding:12px}.panel{padding:16px}.grid{grid-template-columns:1fr}header{padding:15px 5%}}
+:root {
+    --bg:#080d1b;
+    --panel:#101a2d;
+    --panel2:#14223a;
+    --blue:#5878ff;
+    --cyan:#4bdcff;
+    --white:#f5f7ff;
+    --muted:#91a0bb;
+    --border:rgba(255,255,255,.085);
+    --green:#4ee6a2;
+    --red:#ff7185;
+    --purple:#a98bff;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body {
+    min-height:100vh;
+    background:
+        radial-gradient(ellipse at 80% 0%,rgba(88,120,255,.11),transparent 35%),
+        var(--bg);
+    color:var(--white);
+    font-family:'DM Sans',sans-serif;
+}
+button,input,textarea,select { font:inherit; }
+button { cursor:pointer; }
+a { color:inherit; text-decoration:none; }
+
+.topbar {
+    height:72px;
+    padding:0 5%;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:rgba(12,20,37,.88);
+    border-bottom:1px solid var(--border);
+    backdrop-filter:blur(18px);
+    position:sticky;
+    top:0;
+    z-index:50;
+}
+.brand {
+    display:flex;
+    align-items:center;
+    gap:11px;
+    font:700 21px 'Space Grotesk';
+    letter-spacing:-1px;
+}
+.brand-icon {
+    width:36px;
+    height:36px;
+    display:grid;
+    place-items:center;
+    border-radius:11px;
+    background:linear-gradient(135deg,#5878ff,#25c9f5);
+    box-shadow:0 5px 18px rgba(88,120,255,.25);
+}
+.brand-name span { color:var(--cyan); }
+.header-actions {
+    display:flex;
+    align-items:center;
+    gap:11px;
+}
+.header-link,.logout-btn {
+    min-height:38px;
+    padding:0 14px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:rgba(255,255,255,.04);
+    color:#dce5f8;
+    font-size:10px;
+    font-weight:700;
+    transition:.2s;
+}
+.header-link:hover { border-color:var(--blue); }
+.logout-btn {
+    background:rgba(255,113,133,.08);
+    border-color:rgba(255,113,133,.17);
+    color:#ff9aaa;
+}
+.logout-btn:hover { background:rgba(255,113,133,.16); }
+
+.page {
+    max-width:1420px;
+    margin:auto;
+    padding:35px 30px 70px;
+}
+.welcome {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:20px;
+    margin-bottom:28px;
+    animation:fadeUp .6s ease both;
+}
+.eyebrow {
+    color:var(--cyan);
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:1.8px;
+}
+.welcome h1 {
+    font:700 clamp(25px,4vw,34px) 'Space Grotesk';
+    letter-spacing:-1.2px;
+    margin-top:8px;
+}
+.welcome p {
+    color:var(--muted);
+    font-size:11px;
+    margin-top:8px;
+    line-height:1.7;
+}
+.welcome-tag {
+    padding:10px 14px;
+    border:1px solid rgba(88,120,255,.22);
+    border-radius:9px;
+    background:rgba(88,120,255,.08);
+    color:#b4c2ff;
+    font-size:9px;
+    font-weight:800;
+    white-space:nowrap;
+}
+
+.workspace {
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 285px;
+    gap:20px;
+    align-items:start;
+}
+.main-column { min-width:0; }
+.panel {
+    padding:24px;
+    margin-bottom:19px;
+    background:linear-gradient(145deg,rgba(19,32,55,.96),rgba(13,23,40,.96));
+    border:1px solid var(--border);
+    border-radius:15px;
+    box-shadow:0 15px 45px rgba(0,0,0,.12);
+    animation:fadeUp .65s ease both;
+}
+.panel-heading {
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:14px;
+    margin-bottom:22px;
+}
+.panel-heading h2 {
+    font:600 17px 'Space Grotesk';
+    letter-spacing:-.3px;
+}
+.panel-heading p {
+    color:var(--muted);
+    font-size:10px;
+    margin-top:6px;
+    line-height:1.7;
+}
+.heading-icon {
+    width:38px;
+    height:38px;
+    flex-shrink:0;
+    display:grid;
+    place-items:center;
+    border-radius:11px;
+    background:rgba(88,120,255,.12);
+    color:#aabaff;
+    font-size:17px;
+}
+.section-label {
+    color:var(--cyan);
+    font-size:9px;
+    font-weight:800;
+    letter-spacing:1.3px;
+    margin-bottom:12px;
+}
+.form-grid {
+    display:grid;
+    grid-template-columns:2fr 1fr;
+    gap:15px;
+}
+.field { min-width:0; margin-bottom:17px; }
+.field label,.field-label {
+    display:block;
+    color:#c8d4e9;
+    font-size:10px;
+    font-weight:700;
+    margin-bottom:8px;
+}
+.field label span {
+    color:var(--muted);
+    font-weight:400;
+}
+input,textarea,select {
+    width:100%;
+    min-height:43px;
+    padding:11px 13px;
+    outline:none;
+    color:var(--white);
+    background:#0b1527;
+    border:1px solid rgba(255,255,255,.105);
+    border-radius:8px;
+    font-size:11px;
+    transition:border-color .2s,box-shadow .2s;
+}
+input::placeholder,textarea::placeholder { color:#61718e; }
+input:focus,textarea:focus,select:focus {
+    border-color:#6685ff;
+    box-shadow:0 0 0 3px rgba(88,120,255,.1);
+}
+textarea {
+    min-height:85px;
+    resize:vertical;
+    line-height:1.6;
+}
+select option { background:#101a2d; color:white; }
+
+.visibility-options {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+.visibility-option {
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:14px;
+    background:rgba(255,255,255,.025);
+    border:1px solid var(--border);
+    border-radius:10px;
+    cursor:pointer;
+    transition:.2s;
+}
+.visibility-option:has(input:checked) {
+    background:rgba(88,120,255,.09);
+    border-color:rgba(88,120,255,.55);
+}
+.visibility-option input {
+    width:15px;
+    min-height:15px;
+    height:15px;
+    margin-top:2px;
+    accent-color:var(--blue);
+}
+.visibility-option strong {
+    display:block;
+    font-size:10px;
+}
+.visibility-option small {
+    display:block;
+    color:var(--muted);
+    font-size:9px;
+    line-height:1.5;
+    margin-top:5px;
+}
+.visibility-option span {
+    font-size:17px;
+}
+
+.divider {
+    height:1px;
+    background:var(--border);
+    margin:23px 0;
+}
+.questions-heading {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:15px;
+}
+.questions-heading h3 {
+    font:600 15px 'Space Grotesk';
+}
+.question-count {
+    color:var(--cyan);
+    font-size:9px;
+    font-weight:800;
+    padding:7px 10px;
+    border-radius:20px;
+    background:rgba(75,220,255,.07);
+    border:1px solid rgba(75,220,255,.15);
+}
+
+.question-card {
+    position:relative;
+    padding:19px;
+    margin:14px 0;
+    background:rgba(7,15,29,.58);
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:12px;
+    transition:border-color .25s,background .25s;
+    animation:fadeUp .35s ease both;
+}
+.question-card:focus-within {
+    border-color:rgba(88,120,255,.38);
+    background:rgba(13,26,47,.8);
+}
+.question-top {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:16px;
+}
+.question-top h4 {
+    font:600 12px 'Space Grotesk';
+    color:#dfe7fa;
+}
+.question-top h4::before {
+    content:"";
+    display:inline-block;
+    width:7px;
+    height:7px;
+    margin-right:9px;
+    background:var(--cyan);
+    border-radius:50%;
+}
+.question-card label {
+    display:block;
+    color:#bdc9df;
+    font-size:9px;
+    font-weight:700;
+    margin:13px 0 7px;
+}
+.question-card textarea { min-height:76px; }
+.options-container { display:grid; gap:8px; }
+.option-row {
+    display:grid;
+    grid-template-columns:1fr 35px;
+    gap:8px;
+}
+.option-row input { min-height:38px; }
+.option-row button {
+    padding:0;
+    border-radius:8px;
+    background:rgba(255,113,133,.09);
+    color:#ff91a1;
+    border:1px solid rgba(255,113,133,.16);
+    font-size:13px;
+    transition:.2s;
+}
+.option-row button:hover { background:rgba(255,113,133,.2); }
+.question-card .secondary {
+    min-height:34px;
+    margin-top:10px;
+    padding:0 12px;
+    border:1px solid rgba(88,120,255,.2);
+    border-radius:7px;
+    background:rgba(88,120,255,.09);
+    color:#aebeff;
+    font-size:9px;
+    font-weight:700;
+}
+.correct-select {
+    max-width:100%;
+    border-color:rgba(78,230,162,.2);
+    background:rgba(78,230,162,.035);
+}
+.remove-question {
+    padding:7px 10px;
+    border:1px solid rgba(255,113,133,.17);
+    border-radius:7px;
+    background:rgba(255,113,133,.08);
+    color:#ff9aaa;
+    font-size:9px;
+    font-weight:700;
+}
+.remove-question:hover { background:rgba(255,113,133,.17); }
+
+.add-question {
+    width:100%;
+    min-height:46px;
+    margin-top:12px;
+    border:1px dashed rgba(88,120,255,.48);
+    border-radius:9px;
+    background:rgba(88,120,255,.055);
+    color:#b4c2ff;
+    font-size:10px;
+    font-weight:800;
+    transition:.2s;
+}
+.add-question:hover {
+    background:rgba(88,120,255,.13);
+    border-style:solid;
+}
+.form-actions {
+    display:flex;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:23px;
+}
+.btn {
+    min-height:42px;
+    padding:0 17px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:rgba(255,255,255,.04);
+    color:#dce5f8;
+    font-size:10px;
+    font-weight:800;
+    transition:.2s;
+}
+.btn:hover:not(:disabled) {
+    transform:translateY(-2px);
+    border-color:rgba(88,120,255,.5);
+}
+.btn-primary {
+    color:white;
+    border:0;
+    background:linear-gradient(110deg,#5878ff,#287eea);
+    box-shadow:0 7px 20px rgba(65,104,255,.2);
+}
+.btn-primary:hover:not(:disabled) { box-shadow:0 10px 25px rgba(65,104,255,.3); }
+.btn-secondary { background:rgba(255,255,255,.05); }
+.btn-danger {
+    color:#ff9aaa;
+    background:rgba(255,113,133,.08);
+    border-color:rgba(255,113,133,.17);
+}
+button:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+
+#message {
+    color:var(--muted);
+    font-size:10px;
+    line-height:1.7;
+    white-space:pre-wrap;
+    margin-top:13px;
+}
+#message:empty { display:none; }
+
+.key-box {
+    margin-top:18px;
+    padding:20px;
+    background:rgba(78,230,162,.055);
+    border:1px solid rgba(78,230,162,.2);
+    border-radius:12px;
+    color:#dfffee;
+    overflow-wrap:anywhere;
+    animation:fadeUp .4s ease both;
+}
+.key-box h3 { font:600 14px 'Space Grotesk'; }
+.key-box p {
+    color:#9bb9ac;
+    font-size:10px;
+    line-height:1.7;
+    margin-top:9px;
+}
+.key-value {
+    color:var(--green);
+    font:700 22px 'Space Grotesk';
+    letter-spacing:1.5px;
+    margin:15px 0;
+}
+.key-box button {
+    margin-top:13px;
+    min-height:37px;
+    padding:0 13px;
+    background:rgba(78,230,162,.12);
+    border:1px solid rgba(78,230,162,.2);
+    border-radius:7px;
+    color:var(--green);
+    font-size:10px;
+    font-weight:800;
+}
+.hidden { display:none !important; }
+
+.sidebar { position:sticky; top:94px; }
+.side-card {
+    padding:19px;
+    margin-bottom:14px;
+    background:linear-gradient(145deg,#14223a,#101a2d);
+    border:1px solid var(--border);
+    border-radius:13px;
+}
+.side-card h3 {
+    font:600 13px 'Space Grotesk';
+    margin-bottom:14px;
+}
+.side-card p {
+    color:var(--muted);
+    font-size:10px;
+    line-height:1.8;
+}
+.tip {
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:12px 0;
+    border-bottom:1px solid var(--border);
+}
+.tip:last-child { border:0; padding-bottom:0; }
+.tip-icon {
+    width:27px;
+    height:27px;
+    flex-shrink:0;
+    display:grid;
+    place-items:center;
+    border-radius:8px;
+    background:rgba(88,120,255,.12);
+    color:#b4c2ff;
+    font-size:12px;
+}
+.tip strong {
+    display:block;
+    font-size:9px;
+}
+.tip small {
+    display:block;
+    color:var(--muted);
+    font-size:9px;
+    line-height:1.5;
+    margin-top:4px;
+}
+.side-stat {
+    display:flex;
+    justify-content:space-between;
+    padding:10px 0;
+    border-bottom:1px solid var(--border);
+    color:var(--muted);
+    font-size:10px;
+}
+.side-stat:last-child { border:0; }
+.side-stat strong { color:var(--cyan); font-size:11px; }
+
+.management { margin-top:27px; }
+.management-heading {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    margin-bottom:16px;
+}
+.management-heading h2 {
+    font:600 19px 'Space Grotesk';
+}
+.management-heading p {
+    color:var(--muted);
+    font-size:10px;
+    margin-top:5px;
+}
+.management-grid {
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+}
+.management-panel {
+    min-width:0;
+    padding:21px;
+    background:linear-gradient(145deg,rgba(19,32,55,.96),rgba(13,23,40,.96));
+    border:1px solid var(--border);
+    border-radius:14px;
+}
+.management-panel h3 {
+    font:600 14px 'Space Grotesk';
+}
+.management-panel > p {
+    color:var(--muted);
+    font-size:10px;
+    line-height:1.7;
+    margin-top:6px;
+    margin-bottom:15px;
+}
+#myTestsMessage,.empty {
+    color:var(--muted);
+    font-size:10px;
+    line-height:1.7;
+    padding:12px 0;
+}
+.test-card {
+    padding:15px;
+    margin-top:12px;
+    background:rgba(255,255,255,.025);
+    border:1px solid var(--border);
+    border-radius:10px;
+    animation:fadeUp .3s ease both;
+}
+.test-card h3 {
+    font:600 12px 'Space Grotesk';
+    color:#edf2ff;
+    margin:0 0 9px;
+}
+.test-meta {
+    color:var(--muted);
+    font-size:9px;
+    line-height:1.9;
+    overflow-wrap:anywhere;
+}
+.test-actions {
+    display:flex;
+    flex-wrap:wrap;
+    gap:7px;
+    margin-top:13px;
+}
+.test-actions button {
+    min-height:32px;
+    padding:0 10px;
+    border:1px solid rgba(88,120,255,.2);
+    border-radius:6px;
+    background:rgba(88,120,255,.09);
+    color:#b5c3ff;
+    font-size:9px;
+    font-weight:700;
+}
+.test-actions button:hover { background:rgba(88,120,255,.18); }
+.test-actions button:last-child {
+    border-color:rgba(255,113,133,.17);
+    background:rgba(255,113,133,.07);
+    color:#ff9aaa;
+}
+.refresh-button { margin-top:13px; }
+
+.results-panel {
+    margin-top:20px;
+    padding:22px;
+    background:linear-gradient(145deg,#14223a,#101a2d);
+    border:1px solid var(--border);
+    border-radius:14px;
+    animation:fadeUp .4s ease both;
+}
+.results-panel h2 {
+    font:600 17px 'Space Grotesk';
+}
+.results-panel p {
+    color:var(--muted);
+    font-size:10px;
+    margin-top:7px;
+    margin-bottom:17px;
+}
+.table-wrap {
+    overflow-x:auto;
+    border:1px solid var(--border);
+    border-radius:9px;
+}
+table {
+    width:100%;
+    min-width:650px;
+    border-collapse:collapse;
+}
+th,td {
+    padding:13px;
+    text-align:left;
+    border-bottom:1px solid var(--border);
+    font-size:10px;
+}
+th {
+    color:#aebbd3;
+    background:rgba(255,255,255,.035);
+    font-weight:800;
+}
+td { color:#d5def0; }
+tr:last-child td { border-bottom:0; }
+.close-results { margin-top:14px; }
+
+.footer {
+    padding:28px 10px;
+    text-align:center;
+    color:#64738e;
+    font-size:9px;
+}
+@keyframes fadeUp {
+    from { opacity:0; transform:translateY(14px); }
+    to { opacity:1; transform:translateY(0); }
+}
+@media(max-width:1000px) {
+    .workspace { grid-template-columns:1fr; }
+    .sidebar {
+        position:static;
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:13px;
+    }
+    .side-card { margin:0; }
+}
+@media(max-width:700px) {
+    .topbar { height:65px; padding:0 15px; }
+    .brand { font-size:18px; }
+    .brand-icon { width:31px; height:31px; }
+    .header-link { display:none; }
+    .page { padding:25px 13px 50px; }
+    .welcome { align-items:flex-start; flex-direction:column; }
+    .panel { padding:17px; }
+    .form-grid { grid-template-columns:1fr; gap:0; }
+    .management-grid { grid-template-columns:1fr; }
+    .visibility-options { grid-template-columns:1fr; }
+    .sidebar { grid-template-columns:1fr; }
+    .management-heading { align-items:flex-start; flex-direction:column; }
+}
+@media(max-width:430px) {
+    .welcome h1 { font-size:26px; }
+    .question-card { padding:13px; }
+    .question-top { align-items:flex-start; }
+    .form-actions { flex-direction:column; }
+    .form-actions button { width:100%; }
+    .key-value { font-size:18px; }
+}
 </style>
 </head>
+
 <body>
 
-<header>
-<strong><a href="dashboard.html">CloudQuiz / Test Builder</a></strong>
-<div class="header-actions">
-<a class="link-button secondary" href="dashboard.html">Dashboard</a>
-<button class="danger" onclick="logout()">Logout</button>
-</div>
+<header class="topbar">
+    <a href="dashboard.html" class="brand">
+        <span class="brand-icon">☁</span>
+        <span class="brand-name">Cloud<span>Quiz</span></span>
+    </a>
+    <div class="header-actions">
+        <a class="header-link" href="dashboard.html">← Dashboard</a>
+        <button class="logout-btn" onclick="logout()">Logout ↗</button>
+    </div>
 </header>
 
-<main>
+<main class="page">
 
-<section class="panel">
-<h2>Create a New Examination</h2>
-<p>Create an MCQ examination and decide whether it should be public or private.</p>
+    <section class="welcome">
+        <div>
+            <div class="eyebrow">ASSESSMENT MANAGEMENT / CREATOR STUDIO</div>
+            <h1>Build your next examination.</h1>
+            <p>Create, customize and manage assessments from one workspace.</p>
+        </div>
+        <div class="welcome-tag">✦ CREATOR WORKSPACE</div>
+    </section>
 
-<form id="testForm">
-<div class="grid">
-<div>
-<label for="testTitle">Test Title</label>
-<input id="testTitle" maxlength="150" required placeholder="Example: Cloud Computing Unit 6">
-</div>
-<div>
-<label for="maxAttempts">Maximum Attempts</label>
-<input id="maxAttempts" type="number" min="1" max="100" value="1" required>
-</div>
-</div>
+    <div class="workspace">
 
-<label for="description">Description</label>
-<textarea id="description" maxlength="1000" placeholder="Describe this examination..."></textarea>
+        <div class="main-column">
 
-<label for="visibility">Test Visibility</label>
-<select id="visibility">
-<option value="public">Public - Visible to students</option>
-<option value="private">Private - Requires an access key</option>
-</select>
+            <section class="panel">
+                <div class="panel-heading">
+                    <div>
+                        <div class="section-label">01 / EXAMINATION SETUP</div>
+                        <h2>Create a New Examination</h2>
+                        <p>Configure the details and decide how students can access your assessment.</p>
+                    </div>
+                    <div class="heading-icon">✎</div>
+                </div>
 
-<h3>Questions</h3>
-<div id="questions"></div>
+                <form id="testForm">
 
-<button type="button" class="secondary" id="addQuestion">+ Add Question</button>
+                    <div class="form-grid">
+                        <div class="field">
+                            <label for="testTitle">Examination title</label>
+                            <input id="testTitle" maxlength="150" required
+                                placeholder="Example: Cloud Computing — Unit VI">
+                        </div>
+                        <div class="field">
+                            <label for="maxAttempts">Maximum attempts</label>
+                            <input id="maxAttempts" type="number" min="1" max="100"
+                                value="1" required>
+                        </div>
+                    </div>
 
-<div class="form-actions">
-<button type="submit" id="createButton">Create Examination</button>
-</div>
-<div id="message" role="status"></div>
-</form>
+                    <div class="field">
+                        <label for="description">Examination description <span>· Optional</span></label>
+                        <textarea id="description" maxlength="1000"
+                            placeholder="Add instructions, learning objectives or other information..."></textarea>
+                    </div>
 
-<div id="createdKey" class="key-box hidden">
-<h3>Private Test Created Successfully</h3>
-<p>Copy this access key now. It is displayed only once and is not stored by this page.</p>
-<div class="key-value" id="keyValue"></div>
-<p><strong>Test ID:</strong> <span id="createdQuizId"></span></p>
-<button type="button" id="copyKeyButton">Copy Access Key</button>
-</div>
-</section>
+                    <div class="divider"></div>
 
-<section class="panel">
-<h2>My Examinations</h2>
-<p>View the examinations you have created and check student submissions.</p>
-<button type="button" id="refreshTests" class="secondary">Refresh My Tests</button>
-<div id="myTestsMessage" class="empty">Loading your examinations...</div>
-<div id="myTests"></div>
-</section>
+                    <div class="section-label">ACCESS CONFIGURATION</div>
+                    <div class="field">
+                        <label>Who can access this examination?</label>
+                        <div class="visibility-options">
+                            <label class="visibility-option">
+                                <input type="radio" name="visibilityChoice" value="public" checked>
+                                <span>🌐</span>
+                                <div>
+                                    <strong>Public examination</strong>
+                                    <small>Visible to students through the examination dashboard.</small>
+                                </div>
+                            </label>
+                            <label class="visibility-option">
+                                <input type="radio" name="visibilityChoice" value="private">
+                                <span>🔐</span>
+                                <div>
+                                    <strong>Private examination</strong>
+                                    <small>Students need an access key to enter the examination.</small>
+                                </div>
+                            </label>
+                        </div>
+                        <select id="visibility" class="hidden" aria-label="Test visibility">
+                            <option value="public">Public</option>
+                            <option value="private">Private</option>
+                        </select>
+                    </div>
 
-<section class="panel hidden" id="resultsPanel">
-<h2 id="resultsTitle">Student Results</h2>
-<p id="resultsSummary"></p>
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
-<th>Student Email</th>
-<th>Score</th>
-<th>Percentage</th>
-<th>Attempt</th>
-<th>Submitted At</th>
-</tr>
-</thead>
-<tbody id="resultsBody"></tbody>
-</table>
-</div>
-<button type="button" class="secondary" id="closeResults" style="margin-top:15px">Close Results</button>
-</section>
+                    <div class="divider"></div>
+
+                    <div class="questions-heading">
+                        <div>
+                            <div class="section-label">02 / QUESTION DESIGN</div>
+                            <h3>Build your question bank</h3>
+                        </div>
+                        <span class="question-count" id="questionCount">0 QUESTIONS</span>
+                    </div>
+
+                    <div id="questions"></div>
+
+                    <button type="button" class="add-question" id="addQuestion">
+                        + Add another question
+                    </button>
+
+                    <div class="form-actions">
+                        <button type="submit" id="createButton" class="btn btn-primary">
+                            Create examination →
+                        </button>
+                    </div>
+
+                    <div id="message" role="status"></div>
+                </form>
+
+                <div id="createdKey" class="key-box hidden">
+                    <h3>✓ Private examination created</h3>
+                    <p>Save this access key securely. It is displayed only once by this page.</p>
+                    <div class="key-value" id="keyValue"></div>
+                    <p><strong>Examination ID:</strong> <span id="createdQuizId"></span></p>
+                    <button type="button" id="copyKeyButton">Copy access key ↗</button>
+                </div>
+            </section>
+
+        </div>
+
+        <aside class="sidebar">
+
+            <div class="side-card">
+                <h3>Creator guidelines</h3>
+                <div class="tip">
+                    <div class="tip-icon">✎</div>
+                    <div>
+                        <strong>Clear questions</strong>
+                        <small>Write concise questions with unambiguous wording.</small>
+                    </div>
+                </div>
+                <div class="tip">
+                    <div class="tip-icon">✓</div>
+                    <div>
+                        <strong>Verify correct answers</strong>
+                        <small>Choose the correct answer carefully before publishing.</small>
+                    </div>
+                </div>
+                <div class="tip">
+                    <div class="tip-icon">🔒</div>
+                    <div>
+                        <strong>Protect private tests</strong>
+                        <small>Share private access keys only with intended students.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-card">
+                <h3>Builder limits</h3>
+                <div class="side-stat">
+                    <span>Maximum questions</span>
+                    <strong>200</strong>
+                </div>
+                <div class="side-stat">
+                    <span>Options per question</span>
+                    <strong>2–10</strong>
+                </div>
+                <div class="side-stat">
+                    <span>Maximum attempts</span>
+                    <strong>100</strong>
+                </div>
+            </div>
+
+            <div class="side-card">
+                <h3>Workflow</h3>
+                <p>Set up your exam, add questions, select the correct answers and create your assessment. You can manage its availability and review student submissions below.</p>
+            </div>
+
+        </aside>
+    </div>
+
+    <section class="management">
+        <div class="management-heading">
+            <div>
+                <div class="section-label">03 / EXAMINATION CONTROL</div>
+                <h2>My Examinations</h2>
+                <p>Manage your created assessments and review student activity.</p>
+            </div>
+            <button type="button" id="refreshTests" class="btn btn-secondary">
+                ↻ Refresh examinations
+            </button>
+        </div>
+
+        <div class="management-grid">
+            <div class="management-panel">
+                <h3>Your assessment library</h3>
+                <p>Examinations created by your account.</p>
+                <div id="myTestsMessage" class="empty">Loading your examinations...</div>
+                <div id="myTests"></div>
+            </div>
+
+            <div class="management-panel">
+                <h3>Management overview</h3>
+                <p>Use the controls on each examination to manage availability and results.</p>
+                <div class="tip">
+                    <div class="tip-icon">◉</div>
+                    <div>
+                        <strong>View student results</strong>
+                        <small>Review scores, percentages, attempts and submission times.</small>
+                    </div>
+                </div>
+                <div class="tip">
+                    <div class="tip-icon">Ⅱ</div>
+                    <div>
+                        <strong>Close or reopen</strong>
+                        <small>Control whether students can access an examination.</small>
+                    </div>
+                </div>
+                <div class="tip">
+                    <div class="tip-icon">⌫</div>
+                    <div>
+                        <strong>Delete examination</strong>
+                        <small>Remove access while preserving historical results.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="results-panel hidden" id="resultsPanel">
+            <h2 id="resultsTitle">Student Results</h2>
+            <p id="resultsSummary"></p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Student Email</th>
+                            <th>Score</th>
+                            <th>Percentage</th>
+                            <th>Attempt</th>
+                            <th>Submitted At</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody"></tbody>
+                </table>
+            </div>
+            <button type="button" class="btn btn-secondary close-results" id="closeResults">
+                Close results
+            </button>
+        </section>
+    </section>
+
+    <footer class="footer">
+        CloudQuiz · Creator Studio · Cloud-based examination management
+    </footer>
 
 </main>
 
@@ -174,10 +1007,28 @@ async function apiRequest(path, options = {}) {
 }
 
 // =====================================================
+// VISIBILITY SELECTOR
+// =====================================================
+
+const visibilitySelect = document.getElementById("visibility");
+
+document.querySelectorAll('input[name="visibilityChoice"]').forEach(radio => {
+    radio.addEventListener("change", () => {
+        visibilitySelect.value = radio.value;
+    });
+});
+
+// =====================================================
 // QUESTION BUILDER
 // =====================================================
 
 let questionCounter = 0;
+
+function updateQuestionCount() {
+    const count = document.querySelectorAll(".question-card").length;
+    document.getElementById("questionCount").textContent =
+        count + (count === 1 ? " QUESTION" : " QUESTIONS");
+}
 
 function createQuestion() {
     questionCounter++;
@@ -193,11 +1044,12 @@ function createQuestion() {
 
     const removeButton = document.createElement("button");
     removeButton.type = "button";
-    removeButton.className = "danger";
+    removeButton.className = "remove-question";
     removeButton.textContent = "Remove";
     removeButton.addEventListener("click", () => {
         card.remove();
         renumberQuestions();
+        updateQuestionCount();
     });
 
     top.append(heading, removeButton);
@@ -269,8 +1121,7 @@ function createQuestion() {
 
         const remove = document.createElement("button");
         remove.type = "button";
-        remove.className = "danger";
-        remove.textContent = "X";
+        remove.textContent = "×";
         remove.title = "Remove option";
 
         remove.addEventListener("click", () => {
@@ -307,6 +1158,7 @@ function createQuestion() {
 
     document.getElementById("questions").appendChild(card);
     renumberQuestions();
+    updateQuestionCount();
 }
 
 function renumberQuestions() {
@@ -423,6 +1275,8 @@ document.getElementById("testForm").addEventListener("submit", async event => {
         }
 
         document.getElementById("testForm").reset();
+        document.getElementById("visibility").value = "public";
+        document.querySelector('input[name="visibilityChoice"][value="public"]').checked = true;
         document.getElementById("questions").innerHTML = "";
         questionCounter = 0;
         createQuestion();
@@ -433,7 +1287,7 @@ document.getElementById("testForm").addEventListener("submit", async event => {
         message.textContent = "Error: " + error.message;
     } finally {
         button.disabled = false;
-        button.textContent = "Create Examination";
+        button.textContent = "Create examination →";
     }
 });
 
@@ -574,6 +1428,7 @@ async function loadMyTests() {
         message.textContent = "Error: " + error.message;
     }
 }
+
 document.getElementById("refreshTests").addEventListener("click", loadMyTests);
 
 // =====================================================
